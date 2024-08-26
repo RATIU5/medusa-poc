@@ -29,7 +29,7 @@
 
    Fill in the necessary values in the `.env` files.
 
-4. Start the database
+4. Start the database (skip this step if using production database)
 
    ```bash
    pnpm db:start
