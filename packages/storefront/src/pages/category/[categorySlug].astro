@@ -1,0 +1,40 @@
+---
+import {medusa} from "../../lib/medusa";
+
+export const prerender = false;
+
+const { categorySlug } = Astro.params;
+
+if (!categorySlug) {
+  return new Response("Not Found", { status: 404 });
+}
+
+const categoryList = await medusa.productCategories.list({handle: categorySlug});
+
+console.log(categoryList);
+
+if (categoryList.product_categories.length === 0) {
+  return new Response("Not Found", { status: 404 });
+}
+
+if (categoryList.product_categories.length > 1) {
+  return new Response("Multiple categories found", { status: 404 });
+}
+
+const category = categoryList.product_categories[0];
+
+// const categories = await medusa.productCategories.retrieve(categorySlug);
+
+// console.log(categories);
+---
+
+<h1>{category?.name}</h1>
+<p>{category?.description}</p>
+
+<ul>
+{category?.category_children.map((product) => (
+  <li>
+    <a href={`/product/${product.handle}`}>{product.name}</a>
+  </li>
+))}
+</ul>

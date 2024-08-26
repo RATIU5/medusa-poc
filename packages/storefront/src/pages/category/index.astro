@@ -1,0 +1,14 @@
+---
+import {medusa} from "../../lib/medusa";
+
+const categories = await medusa.productCategories.list();
+
+---
+
+<ul>
+  {categories.product_categories.map((category) => (
+    <li>
+      <a href={`/category/${category.handle}`}>{category.name}</a>
+    </li>
+  ))}
+</ul>

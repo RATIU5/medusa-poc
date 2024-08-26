@@ -1,0 +1,15 @@
+---
+import {medusa} from "../../lib/medusa";
+
+export const prerender = false;
+
+const { productSlug } = Astro.params;
+
+if (!productSlug) {
+  return new Response("Not Found", { status: 404 });
+}
+
+const products = medusa.products.retrieve(productSlug);
+
+console.log(products);
+---

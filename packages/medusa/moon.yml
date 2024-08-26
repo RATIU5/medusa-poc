@@ -1,0 +1,11 @@
+tasks:
+  install:
+    command: yarn install
+  build:
+    command: yarn build
+  start:
+    command: yarn start
+  dev:
+    command: yarn dev
+  medusa:
+    command: medusa

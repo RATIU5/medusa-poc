@@ -1,0 +1,19 @@
+{
+  "name": "storefront",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.3",
+    "@medusajs/medusa-js": "6.1.9-preview-20240505115807",
+    "astro": "^4.14.2",
+    "ky": "^1.7.0",
+    "typescript": "^5.5.4"
+  }
+}
