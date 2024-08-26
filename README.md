@@ -2,12 +2,41 @@
 
 ## Requirements
 
-- MacOS
+- OrbStack or Docker
+- Node.js & pnpm
 
-## Getting Started
+## Installation
 
-Simply execute the install script, replacing `project_name` with the name of your project.:
+1. Clone the repository
 
-```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/RATIU5/medusa-astro-starter/v3/install.sh)" _ "project_name" || echo "An error occurred. Press any key to exit."; read -n1
-```
+   ```bash
+   git clone https://github.com/RATIU5/medusa-poc.git && cd medusa-poc
+   ```
+
+2. Install dependencies
+
+   ```bash
+   pnpm install
+   ```
+
+3. Setup the `.env` files
+
+   ```bash
+   cp .env.example .env
+   cp ./packages/backend/.env.example ./packages/backend/.env
+   cp ./packages/storefront/.env.example ./packages/storefront/.env
+   ```
+
+   Fill in the necessary values in the `.env` files.
+
+4. Start the database
+
+   ```bash
+   pnpm db:start
+   ```
+
+5. Start the dev server
+
+   ```bash
+   pnpm dev
+   ```
