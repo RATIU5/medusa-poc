@@ -23,7 +23,7 @@
 
    ```bash
    cp .env.example .env
-   cp ./packages/backend/.env.example ./packages/backend/.env
+   cp ./packages/medusa/.env.example ./packages/medusa/.env
    cp ./packages/storefront/.env.example ./packages/storefront/.env
    ```
 
