@@ -1,4 +1,4 @@
-# test-medusa-1
+# medusa-poc
 
 ## Requirements
 
