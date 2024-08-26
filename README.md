@@ -127,3 +127,37 @@ error: Could not resolve module: PaymentModuleService. Error: Loaders for module
 This error is caused by the database not being able to connect properly due to SSL verification issues. Adding `?sslmode=no-verify` to the end of the database URL should resolve this issue by disabling SSL verification.
 
 ---
+
+### Problem: `pnpm moon run :install` freezes when installing dependencies
+
+When trying to run `pnpm moon run :install`, you may encounter an issue where the installation process freezes. It will happen right round this step:
+
+```
+! Corepack is about to download https://registry.yarnpkg.com/yarn/-/yarn-1.22.22.tgz
+```
+
+**Solution:**
+
+1. Press Return/Enter to accept the prompt to install the package. It's currently hidden at this step.
+
+**Additional Notes:**
+Because this is a monorepo that uses moonrepo, it won't display the prompt to install the package. Pressing Return/Enter will accept the prompt and continue the installation process.
+
+---
+
+### Problem: Timeout aquiring a connection. The pool is probably full
+
+When trying to run the development server, you may encounter an error similar to this:
+
+```
+Error Syncing the fulfillment providers: Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?
+```
+
+**Solution:**
+
+1. Increate the pool size of the database connection on DigitalOcean. This usually happens when running the database on DigitalOcean.
+
+**Additional Notes:**
+This error is caused by the database not being able to acquire a connection due to the pool being full. Increasing the pool size of the database connection should resolve this issue.
+
+---
