@@ -86,3 +86,27 @@ error: Could not resolve module: PaymentModuleService. Error: Loaders for module
 This error is caused by the database not being able to find the `payment_provider` (or related) table. This table is created by the migrations, so running the migrations should resolve this issue.
 
 ---
+
+### Problem: error: No database specified, please fill in `dbName` or `clientUrl` option
+
+**Description:**
+When trying to run the development server, you may encounter an error similar to this:
+
+```
+error:   Could not resolve module: WorkflowsModuleService. Error: Loaders for module WorkflowsModuleService failed: No database specified, please fill in `dbName` or `clientUrl` option
+```
+
+**Solution:**
+
+1. Make sure you copied all the `.env.template` files to `.env` files:
+   ```
+   cp .env.example .env
+   cp ./packages/medusa/.env.example ./packages/medusa/.env
+   cp ./packages/storefront/.env.example ./packages/storefront/.env
+   ```
+2. Make sure you fill out the correct env variables in the `.env` files
+
+**Additional Notes:**
+This error is caused by the database not being able to connect properly due to missing database information in the `.env` files. Make sure you have filled out the necessary values in the `.env` files.
+
+---
