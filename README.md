@@ -93,7 +93,7 @@ This error is caused by the database not being able to find the `payment_provide
 When trying to run the development server, you may encounter an error similar to this:
 
 ```
-error:   Could not resolve module: WorkflowsModuleService. Error: Loaders for module WorkflowsModuleService failed: No database specified, please fill in `dbName` or `clientUrl` option
+error: Could not resolve module: WorkflowsModuleService. Error: Loaders for module WorkflowsModuleService failed: No database specified, please fill in `dbName` or `clientUrl` option
 ```
 
 **Solution:**
@@ -108,5 +108,22 @@ error:   Could not resolve module: WorkflowsModuleService. Error: Loaders for mo
 
 **Additional Notes:**
 This error is caused by the database not being able to connect properly due to missing database information in the `.env` files. Make sure you have filled out the necessary values in the `.env` files.
+
+---
+
+### Problem: SSL required
+
+When starting the development server, you may encounter an error similar to this:
+
+```
+error: Could not resolve module: PaymentModuleService. Error: Loaders for module PaymentModuleService failed: SSL required
+```
+
+**Solution:**
+
+1. Make sure your database connection url ends with `?sslmode=no-verify`. This can be done by appending `?sslmode=no-verify` to the end of the database URL in the `.env` file.
+
+**Additional Notes:**
+This error is caused by the database not being able to connect properly due to SSL verification issues. Adding `?sslmode=no-verify` to the end of the database URL should resolve this issue by disabling SSL verification.
 
 ---
