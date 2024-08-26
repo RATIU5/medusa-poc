@@ -13,19 +13,7 @@
    git clone https://github.com/RATIU5/medusa-poc.git && cd medusa-poc
    ```
 
-2. Install dependencies
-
-   ```bash
-   pnpm install
-   ```
-
-3. Install package dependencies
-
-   ```bash
-   pnpm moon run :install
-   ```
-
-4. Setup the `.env` files
+2. Setup the `.env` files
 
    ```bash
    cp .env.example .env
@@ -34,6 +22,18 @@
    ```
 
    Fill in the necessary values in the `.env` files.
+
+3. Install dependencies
+
+   ```bash
+   pnpm install
+   ```
+
+4. Install package dependencies
+
+   ```bash
+   pnpm moon run :install
+   ```
 
 5. Start the database (skip this step if using production database)
 
