@@ -47,9 +47,29 @@
    pnpm dev
    ```
 
+7. Create an admin user for Medusa
+
+   ```bash
+   cd packages/medusa && pnpm medusa user --email john.doe@site.com --password super_secret_password && cd ../..
+   ```
+
+   \* Replace the email and password with your desired values
+
+8. Create the admin user for Payload (first user only)
+
+   - Navigate to `http://localhost:3000/admin` and create an admin user
+
+## Project Structure
+
+The project is structured as a monorepo with the following packages inside the `packages` directory:
+
+- `medusa`: The main Medusa e-commerce backend
+- `storefront`: The Astro storefront
+- `payload`: The Payload CMS for the Astro storefront
+
 ## Common Problems and Solutions
 
-### Problem: Unable to acquire a connection
+### Problem: `medusa` Unable to acquire a connection
 
 **Description:**
 When trying to run the migrations, you may come across an error similar to this:
@@ -67,7 +87,7 @@ This error is caused by the database not being able to connect properly due to S
 
 ---
 
-### Problem: relation "public.payment_provider" does not exist
+### Problem: `medusa` relation "public.payment_provider" does not exist
 
 **Description:**
 When trying to start your development server, you may encounter an error similar to this:
@@ -87,7 +107,7 @@ This error is caused by the database not being able to find the `payment_provide
 
 ---
 
-### Problem: error: No database specified, please fill in `dbName` or `clientUrl` option
+### Problem: `medusa` error: No database specified, please fill in `dbName` or `clientUrl` option
 
 **Description:**
 When trying to run the development server, you may encounter an error similar to this:
@@ -111,7 +131,7 @@ This error is caused by the database not being able to connect properly due to m
 
 ---
 
-### Problem: SSL required
+### Problem: `medusa` SSL required
 
 When starting the development server, you may encounter an error similar to this:
 
@@ -128,7 +148,7 @@ This error is caused by the database not being able to connect properly due to S
 
 ---
 
-### Problem: `pnpm moon run :install` freezes when installing dependencies
+### Problem: `medusa` `pnpm moon run :install` freezes when installing dependencies
 
 When trying to run `pnpm moon run :install`, you may encounter an issue where the installation process freezes. It will happen right round this step:
 
@@ -145,7 +165,7 @@ Because this is a monorepo that uses moonrepo, it won't display the prompt to in
 
 ---
 
-### Problem: Timeout aquiring a connection. The pool is probably full
+### Problem: `medusa` Timeout aquiring a connection. The pool is probably full
 
 When trying to run the development server, you may encounter an error similar to this:
 
@@ -163,7 +183,7 @@ This error is caused by the database not allowing certain IP addresses to connec
 
 ---
 
-### Problem: connect ECONNREFUSED x.x.x.x:25061
+### Problem: `medusa` connect ECONNREFUSED x.x.x.x:25061
 
 When trying to run the development server, you may encounter an error similar to this:
 
@@ -179,5 +199,27 @@ error: Could not resolve module: PaymentModuleService. Error: Loaders for module
 
 **Additional Notes:**
 This error is caused by the database not being able to connect properly. Make sure your database server is running and that you are passing in the correct connection string.
+
+---
+
+### Problem: `payload` permission denied for schema public
+
+When trying to run the development server, you may encounter an error similar to this from Payload:
+
+```
+error: permission denied for schema public
+```
+
+**Solution:**
+
+1. Make sure you have the correct permissions set up for the database user you are using. You can do this by running the following commands in the database as an admin user:
+
+   ```sql
+   GRANT ALL ON SCHEMA public to payload;
+   GRANT ALL ON DATABASE payload-db TO payload;
+   ```
+
+**Additional Notes:**
+This error is caused by the database user not having the correct permissions to access the `public` schema. Granting the necessary permissions should resolve this issue.
 
 ---

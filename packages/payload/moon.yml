@@ -1,0 +1,9 @@
+tasks:
+  install:
+    command: pnpm install
+  build:
+    command: pnpm build
+  start:
+    command: pnpm start
+  dev:
+    command: pnpm dev

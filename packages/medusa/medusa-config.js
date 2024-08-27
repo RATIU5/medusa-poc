@@ -14,9 +14,4 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     },
   },
-  modules: {
-    helloModuleService: {
-      resolve: "./modules/hello",
-    },
-  },
 });
