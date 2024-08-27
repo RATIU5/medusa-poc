@@ -3,7 +3,7 @@
 ## Requirements
 
 - OrbStack or Docker
-- Node.js & pnpm
+- Node.js & pnpm & yarn
 
 ## Installation
 
@@ -156,8 +156,28 @@ Error Syncing the fulfillment providers: Knex: Timeout acquiring a connection. T
 **Solution:**
 
 1. Increate the pool size of the database connection on DigitalOcean. This usually happens when running the database on DigitalOcean.
+2. If that doesn't work, make sure your IP is added to DigitalOcean's Trusted Sources in the database settings.
 
 **Additional Notes:**
-This error is caused by the database not being able to acquire a connection due to the pool being full. Increasing the pool size of the database connection should resolve this issue.
+This error is caused by the database not allowing certain IP addresses to connect to the database. Make sure your IP is added to the Trusted Sources in the database settings.
+
+---
+
+### Problem: connect ECONNREFUSED x.x.x.x:25061
+
+When trying to run the development server, you may encounter an error similar to this:
+
+```
+error: Could not resolve module: PaymentModuleService. Error: Loaders for module PaymentModuleService failed: connect ECONNREFUSED x.x.x.x:25061
+```
+
+**Solution:**
+
+1. Make sure your database server is running
+2. Make sure that no port is blocking access to the database
+3. Make sure you are passing in your ENV connection string correctly `postgres://user:password@hostname:5432/dbname?sslmode=no-verify`
+
+**Additional Notes:**
+This error is caused by the database not being able to connect properly. Make sure your database server is running and that you are passing in the correct connection string.
 
 ---
