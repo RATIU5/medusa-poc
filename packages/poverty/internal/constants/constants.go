@@ -2,22 +2,11 @@ package constants
 
 const (
 	EnvDatabaseConnection = "DATABASE_CONNECTION"
-	EnvDatabaseUser       = "DATABASE_USER"
-	EnvDatabasePassword   = "DATABASE_PASSWORD"
-	EnvDatabaseName       = "DATABASE_NAME"
-	EnvVerbose            = "VERBOSE"
-	EnvPort               = "PORT"
-)
-
-const (
-	LogLevelDebug = "debug"
-	LogLevelInfo  = "info"
-	LogLevelWarn  = "warn"
-	LogLevelError = "error"
-	LogLevelFatal = "fatal"
+	EnvTokenSecretKey     = "JWT_SECRET_KEY"
 )
 
 type ErrorCode string
+
 const (
 	ErrCodeInvalidInput ErrorCode = "INVALID_INPUT"
 	ErrCodeUnauthorized ErrorCode = "UNAUTHORIZED"

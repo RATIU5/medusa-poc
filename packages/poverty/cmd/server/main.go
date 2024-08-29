@@ -1,16 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"os"
 
-	"github.com/RATIU5/medusa-poc/internal/api"
 	"github.com/RATIU5/medusa-poc/internal/config"
-	"github.com/RATIU5/medusa-poc/internal/errors"
-	"github.com/RATIU5/medusa-poc/internal/logger"
-	"github.com/gofiber/fiber/v2"
+	"github.com/RATIU5/medusa-poc/internal/database"
+	"github.com/RATIU5/medusa-poc/internal/server"
+	"github.com/charmbracelet/log"
 )
-
 
 func main() {
 	cfg, err := config.Load()
@@ -18,18 +15,23 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	appLogger := logger.NewLogger(cfg.Logging.Level)
-
-	app := fiber.New(fiber.Config{
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			return errors.Handler(appLogger, c, err)
-		},
+	logger := log.NewWithOptions(os.Stderr, log.Options{
+		ReportCaller:    true,
+		ReportTimestamp: true,
 	})
+	logger.SetLevel(log.DebugLevel)
 
-	app.Use(logger.Middleware(appLogger))
+	db, err := database.NewDatabase(cfg.Database)
+	if err != nil {
+		logger.Fatalf("failed to connect to database: %v", err)
+	}
 
-	api.SetupRoutes(app)
+	server, err := server.New(cfg, db, logger)
+	if err != nil {
+		logger.Fatalf("failed to create server: %v", err)
+	}
 
-	appLogger.Info("Starting server on %s:%d", cfg.Server.Host, cfg.Server.Port)
-	log.Fatal(app.Listen(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)))
+	if err := server.Start(); err != nil {
+		logger.Fatalf("failed to start server: %v", err)
+	}
 }

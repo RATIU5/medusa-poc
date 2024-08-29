@@ -2,13 +2,13 @@ package errors
 
 import (
 	"github.com/RATIU5/medusa-poc/internal/constants"
-	"github.com/RATIU5/medusa-poc/internal/logger"
+	"github.com/charmbracelet/log"
 	"github.com/gofiber/fiber/v2"
 )
 
-func Handler(l *logger.Logger, c *fiber.Ctx, err error) error {
+func Handler(l *log.Logger, c *fiber.Ctx, err error) error {
 	if e, ok := err.(*AppError); ok {
-		logPrettyError(l, e)
+		l.Errorf("%s %d: %s", e.Code, e.StatusCode, e.DevMessage)
 		return c.Status(e.StatusCode).JSON(fiber.Map{
 			"error": e.Message,
 			"code":  e.Code,

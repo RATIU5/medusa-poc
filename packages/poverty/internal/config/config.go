@@ -22,8 +22,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host string `mapstructure:"host" default:"localhost"`
-	Port int    `mapstructure:"port" default:"3000"`
+	Host      string `mapstructure:"host" default:"localhost"`
+	Port      int    `mapstructure:"port" default:"3000"`
+	SecretKey string `mapstructure:"-"`
 }
 
 type DatabaseConfig struct {
@@ -100,10 +101,21 @@ func loadConfigFile() error {
 }
 
 func loadEnvVariables(config *Config) error {
-	if envValue := os.Getenv(constants.EnvDatabaseConnection); envValue != "" {
-		config.Database.ConnectionUrl = envValue
-	} else {
-		return fmt.Errorf("required environment variable %s is not set", constants.EnvDatabaseConnection)
+	requiredEnvVars := []string{
+		constants.EnvDatabaseConnection,
+		constants.EnvTokenSecretKey,
+	}
+
+	for _, envVar := range requiredEnvVars {
+		if os.Getenv(envVar) == "" {
+			return fmt.Errorf("required environment variable %s is not set", envVar)
+		}
+		switch envVar {
+		case constants.EnvTokenSecretKey:
+			config.Server.SecretKey = os.Getenv(envVar)
+		case constants.EnvDatabaseConnection:
+			config.Database.ConnectionUrl = os.Getenv(envVar)
+		}
 	}
 
 	return nil
@@ -145,6 +157,17 @@ func setDefaultValue(v reflect.Value) {
 			case reflect.Float64:
 				if floatValue, err := strconv.ParseFloat(defaultValue, 64); err == nil {
 					field.SetFloat(floatValue)
+				}
+			case reflect.Slice:
+				if defaultValue == "*" {
+					field.Set(reflect.ValueOf([]string{"*"}))
+				} else {
+					values := strings.Split(defaultValue, ",")
+					slice := reflect.MakeSlice(field.Type(), len(values), len(values))
+					for i, v := range values {
+						slice.Index(i).SetString(strings.TrimSpace(v))
+					}
+					field.Set(slice)
 				}
 			}
 		}
