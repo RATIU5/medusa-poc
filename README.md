@@ -19,6 +19,7 @@
    cp .env.example .env
    cp ./packages/medusa/.env.example ./packages/medusa/.env
    cp ./packages/storefront/.env.example ./packages/storefront/.env
+   cp ./packages/poverty/.env.example ./packages/poverty/.env
    ```
 
    Fill in the necessary values in the `.env` files.

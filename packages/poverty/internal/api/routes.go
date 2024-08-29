@@ -11,6 +11,6 @@ func SetupRoutes(app *fiber.App) {
 	})
 
 	app.Get("/error", func(c *fiber.Ctx) error {
-		return errors.NewInternalError("Sample error", nil)
+		return errors.NewInternalError("Sample error; sample error; sample error; sample error; sample error;", nil)
 	})
 }
