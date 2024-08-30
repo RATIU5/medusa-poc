@@ -31,3 +31,7 @@ graph TD
     L --> L2[router.go]
     L --> L3[middleware.go]
 ```
+
+## WIP
+
+I think that Medusa already has a tool to generate a token. As long as the SECRET_KEYs match, we should be able to use it to generate (or use an exsting) token for Poverty.
