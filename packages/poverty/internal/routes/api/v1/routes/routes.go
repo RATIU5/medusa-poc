@@ -6,5 +6,5 @@ import (
 )
 
 func SetupRoutes(v1 fiber.Router, db *database.Database) {
-	v1.Get("/hello", helloHandler)
+
 }

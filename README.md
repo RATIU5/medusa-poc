@@ -36,19 +36,26 @@
    pnpm moon run :install
    ```
 
-5. Start the database (skip this step if using production database)
+5. Install Go dependencies (need to have Go installed, version 1.23+)
+
+   ```bash
+   go install github.com/air-verse/air@latest
+   go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+   ```
+
+6. Start the database (skip this step if using production database)
 
    ```bash
    pnpm db:start
    ```
 
-6. Start the dev server
+7. Start the dev server
 
    ```bash
    pnpm dev
    ```
 
-7. Create an admin user for Medusa
+8. Create an admin user for Medusa
 
    ```bash
    cd packages/medusa && pnpm medusa user --email john.doe@site.com --password super_secret_password && cd ../..
@@ -56,9 +63,13 @@
 
    \* Replace the email and password with your desired values
 
-8. Create the admin user for Payload (first user only)
+9. Create the admin user for Payload (first user only)
 
    - Navigate to `http://localhost:3000/admin` and create an admin user
+
+### Documentation
+
+- [migrate Go CLI](https://github.com/golang-migrate/migrate?tab=readme-ov-file#cli-usage)
 
 ## Project Structure
 

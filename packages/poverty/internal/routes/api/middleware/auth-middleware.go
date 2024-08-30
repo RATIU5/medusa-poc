@@ -15,6 +15,8 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+const UNAUTHORIZED = "unauthorized request"
+
 func AuthMiddleware(secretKey string, logger *log.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
@@ -22,7 +24,7 @@ func AuthMiddleware(secretKey string, logger *log.Logger) fiber.Handler {
 		if authHeader == "" {
 			logger.Error("'Authorization' header not found")
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "unauthorized request",
+				"error": UNAUTHORIZED,
 			})
 		}
 
@@ -30,7 +32,7 @@ func AuthMiddleware(secretKey string, logger *log.Logger) fiber.Handler {
 		if tokenString == authHeader {
 			logger.Error("invalid 'Authorization' header")
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "unauthorized request",
+				"error": UNAUTHORIZED,
 			})
 		}
 
@@ -44,7 +46,7 @@ func AuthMiddleware(secretKey string, logger *log.Logger) fiber.Handler {
 		if err != nil {
 			logger.Error("failed to parse token", "error", err)
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "unauthorized request",
+				"error": UNAUTHORIZED,
 			})
 		}
 
@@ -52,7 +54,7 @@ func AuthMiddleware(secretKey string, logger *log.Logger) fiber.Handler {
 			if time.Now().Unix() > claims.ExpiresAt.Unix() {
 				logger.Error("token expired")
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-					"error": "unauthorized request",
+					"error": UNAUTHORIZED,
 				})
 			}
 
@@ -63,7 +65,7 @@ func AuthMiddleware(secretKey string, logger *log.Logger) fiber.Handler {
 
 		logger.Error("invalid token")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "unauthorized request",
+			"error": UNAUTHORIZED,
 		})
 	}
 }
