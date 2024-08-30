@@ -35,3 +35,4 @@ graph TD
 ## WIP
 
 I think that Medusa already has a tool to generate a token. As long as the SECRET_KEYs match, we should be able to use it to generate (or use an exsting) token for Poverty.
+Have Jordan see if he can send a request to Poverty from Medusa. Needs a button UI to activate the request.
