@@ -43,7 +43,6 @@ func (item *Item) validateContent() error {
 	return nil
 }
 
-// CreateItem inserts a new item into the database
 func CreateItem(ctx context.Context, db *database.Database, item *Item) error {
 	if item.Title == "" {
 		return errors.New("item title cannot be empty")
@@ -53,7 +52,6 @@ func CreateItem(ctx context.Context, db *database.Database, item *Item) error {
 	}
 
 	return db.ExecuteTransaction(ctx, func(tx pgx.Tx) error {
-		// If ParentID is provided, check if it exists
 		if item.ParentID != nil {
 			var exists bool
 			err := tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM items WHERE id = $1)", item.ParentID).Scan(&exists)
@@ -88,7 +86,6 @@ func CreateItem(ctx context.Context, db *database.Database, item *Item) error {
 	})
 }
 
-// CreateItemHandler is an example Fiber handler for creating an item
 func (i *ItemsHandler) CreateItemHandler(c *fiber.Ctx) error {
 	var item Item
 	if err := c.BodyParser(&item); err != nil {
@@ -106,4 +103,29 @@ func (i *ItemsHandler) CreateItemHandler(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(item)
+}
+
+func (i *ItemsHandler) GetAllItemsHandler(c *fiber.Ctx) error {
+	rows, err := i.db.ExecuteQuery(c.Context(), "SELECT * FROM items")
+	if err != nil {
+		i.logger.Error(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to get items",
+		})
+	}
+	defer rows.Close()
+
+	items := make([]Item, 0)
+	for rows.Next() {
+		var item Item
+		if err := rows.Scan(&item.ID, &item.Title, &item.ParentID, &item.Content, &item.Metadata, &item.CreatedAt, &item.UpdatedAt); err != nil {
+			i.logger.Error(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to get items",
+			})
+		}
+		items = append(items, item)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(items)
 }

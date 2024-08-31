@@ -6,7 +6,6 @@ import (
 )
 
 func setupRoutes(s *Server) {
-	// Health check route
 	healthHandler := health.NewHandler(s.app, s.db)
 	s.app.Get("/health", healthHandler.Handler)
 
