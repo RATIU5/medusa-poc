@@ -36,9 +36,9 @@ func (s *Server) Start() error {
 	setupMiddleware(s)
 	setupRoutes(s)
 
-	// for _, route := range s.app.GetRoutes() {
-	// 	fmt.Printf("Method: %s, Path: %s, Handler: %s\n", route.Method, route.Path, route.Name)
-	// }
+	for _, route := range s.app.GetRoutes() {
+		fmt.Printf("Method: %s, Path: %s, Handler: %s\n", route.Method, route.Path, route.Name)
+	}
 
 	return s.app.Listen(addr)
 }

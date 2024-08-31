@@ -13,5 +13,5 @@ func SetupApiRoutes(app *fiber.App, db *database.Database, cfg *config.Config, l
 	api := app.Group("/api")
 	api.Use(apimiddleware.AuthMiddleware(cfg.Server.SecretKey, logger))
 
-	v1.SetupRoutes(api, db)
+	v1.SetupRoutes(api, db, logger)
 }
