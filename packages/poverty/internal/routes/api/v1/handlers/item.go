@@ -5,11 +5,15 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
+	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 const ItemNotFound = "item not found"
@@ -64,7 +68,7 @@ type UpdateItem struct {
 	ParentId *uuid.UUID             `json:"parent_id,omitempty"`
 }
 
-func (i *ItemsHandler) UpdateItemHandler(c *fiber.Ctx) error {
+func (i *ItemsHandler) PartialUpdateItemHandler(c *fiber.Ctx) error {
 	paramId := c.Params("id")
 	if paramId == "" {
 		i.logger.Error("item id not provided")
@@ -72,73 +76,87 @@ func (i *ItemsHandler) UpdateItemHandler(c *fiber.Ctx) error {
 			"error": ItemNotFound,
 		})
 	}
+	itemUUID, err := uuid.Parse(paramId)
+	if err != nil {
+		i.logger.Error("item id not valid")
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": ItemNotFound,
+		})
+	}
 
-	err := i.db.ExecuteTransaction(c.Context(), func(tx pgx.Tx) error {
-		var existingItem UpdateItem
-		query := `
-			SELECT title, parent_id, content, metadata
-			FROM items
-			WHERE id = $1`
-		err := tx.QueryRow(c.Context(), query, paramId).Scan(
-			&existingItem.Title,
-			&existingItem.ParentId,
-			&existingItem.Content,
-			&existingItem.Metadata,
-		)
-		if err != nil {
-			return errors.New("specified item does not exist")
+	var requestBody map[string]interface{}
+	if err := c.BodyParser(&requestBody); err != nil {
+		i.logger.Error(err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request body",
+		})
+	}
+
+	newItem := new(UpdateItem)
+	if title, ok := requestBody["title"].(string); ok {
+		newItem.Title = title
+	}
+	if content, ok := requestBody["content"].(json.RawMessage); ok {
+		newItem.Content = content
+	}
+	if metadata, ok := requestBody["metadata"].(map[string]interface{}); ok {
+		newItem.Metadata = metadata
+	}
+	if _, ok := requestBody["parent_id"]; ok {
+		nilUUID := uuid.Nil
+		newItem.ParentId = &nilUUID
+		if parentIdStr, ok := requestBody["parent_id"].(string); ok && parentIdStr != "" {
+			parsedUUID, err := uuid.Parse(parentIdStr)
+			if err != nil {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"error": "invalid parent_id format",
+				})
+			}
+			newItem.ParentId = &parsedUUID
 		}
+	}
 
-		newItem := new(UpdateItem)
-
-		if err = c.BodyParser(newItem); err != nil {
-			i.logger.Error(err)
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid request body",
-			})
-		}
-
-		equal, err := compareAndValidateUpdateItems(c.Context(), tx, existingItem, *newItem)
+	err = i.db.ExecuteTransaction(c.Context(), func(tx pgx.Tx) error {
+		existingItem, err := getExistingItem(c.Context(), tx, paramId)
 		if err != nil {
 			return err
 		}
 
-		if equal {
-			return errors.New("no new changes")
+		if newItem.ParentId != nil && *newItem.ParentId != uuid.Nil {
+			if *newItem.ParentId == itemUUID {
+				return errors.New("cannot set parent_id to item's own id")
+			}
+			isValid, err := isValidId(c.Context(), tx, newItem.ParentId)
+			if err != nil {
+				i.logger.Error("failed to check parent_id", "error", err)
+				return err
+			}
+			if !isValid {
+				return errors.New("parent id does not exist")
+			}
 		}
 
-		updateQuery := `
-			UPDATE items
-			SET title = $1, parent_id = $2, content = $3, metadata = $4
-			WHERE id = $5`
-		_, err = tx.Exec(c.Context(), updateQuery,
-			newItem.Title,
-			newItem.ParentId,
-			newItem.Content,
-			newItem.Metadata,
-			paramId)
-		return err
+		updateQuery, args := buildUpdateQuery(itemUUID, existingItem, newItem)
+		if updateQuery == "" {
+			return errors.New("no changes detected")
+		}
+
+		i.logger.Debug(updateQuery)
+
+		_, err = tx.Exec(c.Context(), updateQuery, args...)
+		if err != nil {
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				if pgErr.Code == "23503" { // foreign key violation
+					return errors.New("cannot remove parent_id due to existing children")
+				}
+			}
+			return err
+		}
+		return nil
 	})
 
 	if err != nil {
-		if err.Error() == "specified item does not exist" {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": ItemNotFound,
-			})
-		}
-		if err.Error() == "no changes detected" {
-			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-				"message": "ok",
-			})
-		}
-		if err.Error() == "new parent does not exist" {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid parent ID",
-			})
-		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "failed to update item",
-		})
+		return handleUpdateError(c, i.logger, err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -146,48 +164,98 @@ func (i *ItemsHandler) UpdateItemHandler(c *fiber.Ctx) error {
 	})
 }
 
-func compareAndValidateUpdateItems(ctx context.Context, tx pgx.Tx, oldItem, newItem UpdateItem) (bool, error) {
-	changed := false
+func getExistingItem(ctx context.Context, tx pgx.Tx, id string) (*UpdateItem, error) {
+	var existingItem UpdateItem
+	query := `
+		SELECT title, parent_id, content, metadata
+		FROM items
+		WHERE id = $1`
+	err := tx.QueryRow(ctx, query, id).Scan(
+		&existingItem.Title,
+		&existingItem.ParentId,
+		&existingItem.Content,
+		&existingItem.Metadata,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, errors.New("specified item does not exist")
+		}
+		return nil, err
+	}
+	return &existingItem, nil
+}
 
-	if oldItem.Title != newItem.Title {
-		changed = true
+func buildUpdateQuery(id uuid.UUID, existing, new *UpdateItem) (string, []interface{}) {
+	updates := []string{}
+	args := []interface{}{id}
+	argIndex := 2
+
+	if new.Title != "" && new.Title != existing.Title {
+		updates = append(updates, fmt.Sprintf("title = $%d", argIndex))
+		args = append(args, new.Title)
+		argIndex++
 	}
 
-	if !reflect.DeepEqual(oldItem.Content, newItem.Content) {
-		changed = true
-	}
-
-	if !reflect.DeepEqual(oldItem.Metadata, newItem.Metadata) {
-		changed = true
-	}
-
-	if !areParentIdsEqual(oldItem.ParentId, newItem.ParentId) {
-		changed = true
-		if newItem.ParentId != nil {
-			exists, err := doesItemExist(ctx, tx, *newItem.ParentId)
-			if err != nil {
-				return false, err
+	// Handle parent_id
+	if new.ParentId != nil {
+		if *new.ParentId == id {
+			return "SAME_PARENT", nil
+		}
+		if *new.ParentId == uuid.Nil {
+			// Only add update if existing.ParentId is not null
+			if existing.ParentId != nil {
+				updates = append(updates, "parent_id = NULL")
 			}
-			if !exists {
-				return false, errors.New("new parent does not exist")
-			}
+		} else if !reflect.DeepEqual(new.ParentId, existing.ParentId) {
+			updates = append(updates, fmt.Sprintf("parent_id = $%d", argIndex))
+			args = append(args, *new.ParentId)
+			argIndex++
 		}
 	}
 
-	return !changed, nil
+	if new.Content != nil && !reflect.DeepEqual(new.Content, existing.Content) {
+		updates = append(updates, fmt.Sprintf("content = $%d", argIndex))
+		args = append(args, new.Content)
+		argIndex++
+	}
+
+	if new.Metadata != nil && !reflect.DeepEqual(new.Metadata, existing.Metadata) {
+		updates = append(updates, fmt.Sprintf("metadata = $%d", argIndex))
+		args = append(args, new.Metadata)
+		argIndex++
+	}
+
+	if len(updates) == 0 {
+		return "", args
+	}
+
+	query := fmt.Sprintf("UPDATE items SET %s WHERE id = $1", strings.Join(updates, ", "))
+	return query, args
 }
 
-func areParentIdsEqual(a, b *uuid.UUID) bool {
-	if a == nil && b == nil {
-		return true
+func handleUpdateError(c *fiber.Ctx, logger *log.Logger, err error) error {
+	switch err.Error() {
+	case "specified item does not exist":
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": ItemNotFound,
+		})
+	case "no changes detected":
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "no changes applied",
+		})
+	case "cannot remove parent_id due to existing children":
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Cannot remove parent_id because this item has children",
+		})
+	default:
+		logger.Error("failed to update item", "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to update item",
+		})
 	}
-	if a == nil || b == nil {
-		return false
-	}
-	return *a == *b
 }
 
-func doesItemExist(ctx context.Context, tx pgx.Tx, id uuid.UUID) (bool, error) {
+func isValidId(ctx context.Context, tx pgx.Tx, id *uuid.UUID) (bool, error) {
 	var exists bool
 	err := tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM items WHERE id = $1)", id).Scan(&exists)
 	if err != nil {

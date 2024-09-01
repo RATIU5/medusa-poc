@@ -16,5 +16,5 @@ func SetupRoutes(router fiber.Router, db *database.Database, logger *log.Logger)
 
 	item := items.Group(":id")
 	item.Get("/", itemHandlers.GetItemHandler)
-	item.Put("/", itemHandlers.UpdateItemHandler)
+	item.Patch("/", itemHandlers.PartialUpdateItemHandler)
 }
