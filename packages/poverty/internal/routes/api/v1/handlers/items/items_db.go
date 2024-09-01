@@ -54,7 +54,7 @@ func (i *ItemsHandler) updatePartialItem(ctx context.Context, itemUUID uuid.UUID
 			return err
 		}
 
-		updateQuery, args := buildUpdateQuery(itemUUID, existingItem, newItem)
+		updateQuery, args := buildPartialUpdateQuery(itemUUID, existingItem, newItem)
 		if updateQuery == "" {
 			return ErrNoChangesDetected
 		}
@@ -91,7 +91,7 @@ func getExistingItem(ctx context.Context, tx pgx.Tx, id string) (*PartialUpdateI
 	return &existingItem, nil
 }
 
-func buildUpdateQuery(id uuid.UUID, existing, new *PartialUpdateItem) (string, []interface{}) {
+func buildPartialUpdateQuery(id uuid.UUID, existing, new *PartialUpdateItem) (string, []interface{}) {
 	updates := []string{}
 	args := []interface{}{id}
 	argIndex := 2
@@ -210,20 +210,17 @@ func (i *ItemsHandler) updateFullItem(ctx context.Context, itemUUID uuid.UUID, u
 	var updatedItem Item
 
 	err := i.db.ExecuteTransaction(ctx, func(tx pgx.Tx) error {
-		// Check if the item exists
 		_, err := getExistingItem(ctx, tx, itemUUID.String())
 		if err != nil {
 			return err
 		}
 
-		// Validate parent_id if provided
 		if updateItem.ParentID != nil {
 			if err := validateParentID(ctx, tx, itemUUID, updateItem.ParentID); err != nil {
 				return err
 			}
 		}
 
-		// Prepare the update query
 		query := `
 			UPDATE items
 			SET title = $1, parent_id = $2, content = $3, metadata = $4, updated_at = NOW()
@@ -231,7 +228,6 @@ func (i *ItemsHandler) updateFullItem(ctx context.Context, itemUUID uuid.UUID, u
 			RETURNING id, title, parent_id, content, metadata, created_at, updated_at
 		`
 
-		// Execute the update
 		err = tx.QueryRow(ctx, query,
 			updateItem.Title,
 			updateItem.ParentID,
@@ -263,4 +259,27 @@ func (i *ItemsHandler) updateFullItem(ctx context.Context, itemUUID uuid.UUID, u
 	}
 
 	return &updatedItem, nil
+}
+
+func (i *ItemsHandler) deleteItem(ctx context.Context, id uuid.UUID) error {
+	return i.db.ExecuteTransaction(ctx, func(tx pgx.Tx) error {
+		_, err := getExistingItem(ctx, tx, id.String())
+		if err != nil {
+			return err
+		}
+
+		query := "UPDATE items SET parent_id = NULL WHERE parent_id = $1"
+		_, err = tx.Exec(ctx, query, id)
+		if err != nil {
+			return fmt.Errorf("error updating parent_id: %w", err)
+		}
+
+		query = "DELETE FROM items WHERE id = $1"
+		_, err = tx.Exec(ctx, query, id)
+		if err != nil {
+			return fmt.Errorf("error deleting item: %w", err)
+		}
+
+		return nil
+	})
 }

@@ -4,7 +4,7 @@ import * as jwt from "jsonwebtoken";
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const userId = req.requestId;
   const token = generateToken(userId);
-  console.log(token);
+  // console.log(token);
 
   const result = await fetch(
     `${process.env.REACT_PUBLIC_POVERTY_URL}/api/v1/hello`,

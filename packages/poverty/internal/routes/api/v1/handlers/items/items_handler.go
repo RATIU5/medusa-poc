@@ -111,3 +111,24 @@ func (i *ItemsHandler) UpdateItemHandler(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(updatedItem)
 }
+
+func (i *ItemsHandler) DeleteItemHandler(c *fiber.Ctx) error {
+	paramId := c.Params("id")
+	if paramId == "" {
+		return handleError(c, i.logger, ErrItemIDNotProvided)
+	}
+
+	itemUUID, err := uuid.Parse(paramId)
+	if err != nil {
+		return handleError(c, i.logger, ErrInvalidItemID)
+	}
+
+	err = i.deleteItem(c.Context(), itemUUID)
+	if err != nil {
+		return handleError(c, i.logger, err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "item deleted",
+	})
+}

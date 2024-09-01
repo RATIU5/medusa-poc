@@ -40,11 +40,16 @@ Have Jordan see if he can send a request to Poverty from Medusa. Needs a button 
 **Proposed Routing**
 
 ```go
-api := app.Group("/api/v1")
-api.Get("/items", handleGetAllItems)
-api.Get("/items/:id", handleGetItem)
-api.Post("/items", handleCreateItem)
-api.Put("/items/:id", handleUpdateItem)
+api := app.Group("/api/v1") // done
+api.Get("/items", handleGetAllItems) // done
+api.Get("/items/:id", handleGetItem) // done
+api.Post("/items", handleCreateItem) // done
+api.Put("/items/:id", handleUpdateItem) // done
+api.Patch("/items/:id", handleUpdateItem) // done
 api.Delete("/items/:id", handleDeleteItem)
 api.Get("/items/:id/children", handleGetChildren)
 ```
+
+### To Do
+
+Bug: Adding text as the metadata does not trigger an update on partial update
