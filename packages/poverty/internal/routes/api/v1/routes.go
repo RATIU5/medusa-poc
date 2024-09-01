@@ -19,4 +19,6 @@ func SetupRoutes(router fiber.Router, db *database.Database, logger *log.Logger)
 	item.Patch("/", itemHandlers.PartialUpdateItemHandler)
 	item.Put("/", itemHandlers.UpdateItemHandler)
 	item.Delete("/", itemHandlers.DeleteItemHandler)
+
+	item.Get("/children", itemHandlers.GetChildrenHandler)
 }

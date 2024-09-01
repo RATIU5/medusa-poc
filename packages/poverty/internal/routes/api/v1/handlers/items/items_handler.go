@@ -132,3 +132,22 @@ func (i *ItemsHandler) DeleteItemHandler(c *fiber.Ctx) error {
 		"message": "item deleted",
 	})
 }
+
+func (i *ItemsHandler) GetChildrenHandler(c *fiber.Ctx) error {
+	paramId := c.Params("id")
+	if paramId == "" {
+		return handleError(c, i.logger, ErrItemIDNotProvided)
+	}
+
+	itemUUID, err := uuid.Parse(paramId)
+	if err != nil {
+		return handleError(c, i.logger, ErrInvalidItemID)
+	}
+
+	children, err := i.getChildren(c.Context(), itemUUID)
+	if err != nil {
+		return handleError(c, i.logger, err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(children)
+}

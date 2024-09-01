@@ -283,3 +283,26 @@ func (i *ItemsHandler) deleteItem(ctx context.Context, id uuid.UUID) error {
 		return nil
 	})
 }
+
+func (i *ItemsHandler) getChildren(ctx context.Context, id uuid.UUID) ([]Item, error) {
+	rows, err := i.db.ExecuteQuery(ctx, "SELECT id, title, parent_id, content, metadata, created_at, updated_at FROM items WHERE parent_id = $1", id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get children: %w", err)
+	}
+	defer rows.Close()
+
+	var items []Item = []Item{}
+	for rows.Next() {
+		var item Item
+		if err := rows.Scan(&item.ID, &item.Title, &item.ParentID, &item.Content, &item.Metadata, &item.CreatedAt, &item.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan item: %w", err)
+		}
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over items: %w", err)
+	}
+
+	return items, nil
+}

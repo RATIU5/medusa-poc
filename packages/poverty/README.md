@@ -46,10 +46,11 @@ api.Get("/items/:id", handleGetItem) // done
 api.Post("/items", handleCreateItem) // done
 api.Put("/items/:id", handleUpdateItem) // done
 api.Patch("/items/:id", handleUpdateItem) // done
-api.Delete("/items/:id", handleDeleteItem)
-api.Get("/items/:id/children", handleGetChildren)
+api.Delete("/items/:id", handleDeleteItem) // done
+api.Get("/items/:id/children", handleGetChildren) // done
 ```
 
 ### To Do
 
 Bug: Adding text as the metadata does not trigger an update on partial update
+?: :item/children returns [] on error, is that smart?
