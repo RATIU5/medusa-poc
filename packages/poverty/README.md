@@ -8,49 +8,165 @@ Poverty is a simple CMS for small websites. It is designed to be easy to use. It
 - PostgreSQL 16 or later
 - Air (for development)
 
-## File Structure
+## API Documentation
 
-```mermaid
-graph TD
-    A[root] --> B[internal]
-    A --> C[cmd] --> C1[server]
-    A --> D[tmp] --> D1[main]
-    D --> E[config.toml]
+| Method          | Path                       | Description                 |
+| --------------- | -------------------------- | --------------------------- |
+| [GET](#get-all) | /api/v1/items              | Get all items               |
+| [POST](#create) | /api/v1/items              | Create a new item           |
+| GET             | /api/v1/items/:id          | Get an item by ID           |
+| PATCH           | /api/v1/items/:id          | Partially update an item    |
+| PUT             | /api/v1/items/:id          | Fully update an item        |
+| DELETE          | /api/v1/items/:id          | Delete an item              |
+| GET             | /api/v1/items/:id/children | Get all children of an item |
 
-    F1 --> F6[health] --> F7[health.go]
-    B --> F[routes] --> F1[api] --> F2[v1] --> F3[routes.go]
-    F --> F8[router.go]
-    F2 --> F4[handlers]
-    F2 --> F5[routes]
-    B --> G[config] --> G1[config.go]
-    B --> H[constants] --> H1[constants.go]
-    B --> I[database] --> I1[database.go]
-    B --> J[errors] --> J1[error.go]
-    B --> K[middleware] --> K1[error_handler.go]
-    B --> L[server] --> L1[server.go]
-    L --> L2[router.go]
-    L --> L3[middleware.go]
+### Get All
+
+#### Request
+
+<details>
+  <summary>Headers</summary>
+
+| Key             | Value              |
+| --------------- | ------------------ |
+| `Content-Type`  | `application/json` |
+| `Authorization` | `Bearer {token}`   |
+
+</details>
+
+#### Responses
+
+<details>
+  <summary>200 OK</summary>
+
+```ts
+Array<{
+  id: string;
+  title: string;
+  metadata: unknown;
+  content: unknown;
+  parent_id: string;
+  created_at: string;
+  updated_at: string;
+}>;
 ```
 
-## WIP
+</details>
 
-I think that Medusa already has a tool to generate a token. As long as the SECRET_KEYs match, we should be able to use it to generate (or use an exsting) token for Poverty.
-Have Jordan see if he can send a request to Poverty from Medusa. Needs a button UI to activate the request.
+<details>
+  <summary>401 Unauthorized</summary>
 
-**Proposed Routing**
-
-```go
-api := app.Group("/api/v1") // done
-api.Get("/items", handleGetAllItems) // done
-api.Get("/items/:id", handleGetItem) // done
-api.Post("/items", handleCreateItem) // done
-api.Put("/items/:id", handleUpdateItem) // done
-api.Patch("/items/:id", handleUpdateItem) // done
-api.Delete("/items/:id", handleDeleteItem) // done
-api.Get("/items/:id/children", handleGetChildren) // done
+```ts
+{
+  error: string;
+}
 ```
+
+</details>
+
+<details>
+    <summary>404 Not Found</summary>
+    
+```ts
+{
+  error: string;
+}
+```
+
+</details>
+
+<details>
+  <summary>500 Internal Server Error</summary>
+
+```ts
+{
+  error: string;
+}
+```
+
+</details>
+
+### Create
+
+#### Request
+
+<details>
+  <summary>Headers</summary>
+
+| Key             | Value              |
+| --------------- | ------------------ |
+| `Content-Type`  | `application/json` |
+| `Authorization` | `Bearer {token}`   |
+
+</details>
+
+<details>
+  <summary>Body</summary>
+
+```ts
+{
+  title: string;
+  content: unknown;
+  metadata?: unknown;
+  parent_id?: string;
+}
+```
+
+</details>
+
+#### Responses
+
+<details>
+  <summary>201 Created</summary>
+
+```ts
+{
+  id: string;
+  title: string;
+  metadata: unknown;
+  content: unknown;
+  parent_id: string;
+  created_at: string;
+  updated_at: string;
+}
+```
+
+</details>
+
+<details>
+  <summary>400 Bad Request</summary>
+
+```ts
+{
+  error: string;
+}
+```
+
+</details>
+
+<details>
+  <summary>401 Unauthorized</summary>
+
+```ts
+{
+  error: string;
+}
+```
+
+</details>
+
+<details>
+  <summary>500 Internal Server Error</summary>
+
+```ts
+{
+  error: string;
+}
+```
+
+</details>
 
 ### To Do
 
-Bug: Adding text as the metadata does not trigger an update on partial update
-?: :item/children returns [] on error, is that smart?
+- Bug: Adding text as the metadata does not trigger an update on partial update
+- ?: :item/children returns [] on error, is that smart?

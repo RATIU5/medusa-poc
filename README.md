@@ -69,6 +69,10 @@
 
 ### Documentation
 
+[Medusa](./packages/medusa/README.md)
+[Poverty](./packages/poverty/README.md)
+[Storefront](./packages/storefront/README.md)
+
 - [migrate Go CLI](https://github.com/golang-migrate/migrate?tab=readme-ov-file#cli-usage)
 
 ## Project Structure
