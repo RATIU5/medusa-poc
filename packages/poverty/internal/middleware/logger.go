@@ -12,7 +12,7 @@ func Logger(logger *log.Logger) fiber.Handler {
 		c.Locals("logger", logger)
 		start := time.Now()
 		err := c.Next()
-		logger.Info("request",
+		logger.Info(nil,
 			"method", c.Method(),
 			"path", c.Path(),
 			"status", c.Response().StatusCode(),
