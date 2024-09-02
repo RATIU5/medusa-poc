@@ -62,11 +62,11 @@ func TestBuildQuery(t *testing.T) {
 			table: "items",
 			filters: []queryparser.Filter{
 				{Field: "content.category", Operator: "eq", Value: "news"},
-				{Field: "content.tags", Operator: "contains", Value: "['important']"},
+				{Field: "content.tags", Operator: "contains", Value: "[\"important\"]"},
 			},
 			selects:      queryparser.Select{Fields: []string{"id", "content.title", "content.author"}},
-			expectedSQL:  "SELECT id, content->>'title' as content.title, content->>'author' as content.author FROM items WHERE content->>'category' = ? AND content @> ?::jsonb",
-			expectedArgs: []interface{}{"news", "['important']"},
+			expectedSQL:  "SELECT id, content->>'title' as content.title, content->>'author' as content.author FROM items WHERE content->>'category' = ? AND content->'tags' @> ?::jsonb",
+			expectedArgs: []interface{}{"news", "[\"important\"]"},
 			expectError:  false,
 		},
 		{
@@ -79,6 +79,62 @@ func TestBuildQuery(t *testing.T) {
 			expectedSQL:  "",
 			expectedArgs: nil,
 			expectError:  true,
+		},
+		{
+			name:  "JSONB field LIKE operation",
+			table: "items",
+			filters: []queryparser.Filter{
+				{Field: "content.description", Operator: "ilike", Value: "%test%"},
+			},
+			selects:      queryparser.Select{Fields: []string{"id", "content.title"}},
+			expectedSQL:  "SELECT id, content->>'title' as content.title FROM items WHERE content->>'description' ILIKE ?",
+			expectedArgs: []interface{}{"%test%"},
+			expectError:  false,
+		},
+		{
+			name:  "Multiple JSONB conditions with AND",
+			table: "items",
+			filters: []queryparser.Filter{
+				{Field: "metadata.status", Operator: "eq", Value: "active"},
+				{Field: "content.views", Operator: "gt", Value: "100"},
+			},
+			selects:      queryparser.Select{Fields: []string{"id", "content.title", "metadata.status"}},
+			expectedSQL:  "SELECT id, content->>'title' as content.title, metadata->>'status' as metadata.status FROM items WHERE metadata->>'status' = ? AND (content->>'views')::int > ?",
+			expectedArgs: []interface{}{"active", "100"},
+			expectError:  false,
+		},
+		{
+			name:  "Nested JSONB field",
+			table: "items",
+			filters: []queryparser.Filter{
+				{Field: "content.author.name", Operator: "eq", Value: "John Doe"},
+			},
+			selects:      queryparser.Select{Fields: []string{"id", "content.author.email"}},
+			expectedSQL:  "SELECT id, content->'author'->>'email' as content.author.email FROM items WHERE content->'author'->>'name' = ?",
+			expectedArgs: []interface{}{"John Doe"},
+			expectError:  false,
+		},
+		{
+			name:  "Complex query with multiple conditions and nested JSONB",
+			table: "items",
+			filters: []queryparser.Filter{
+				{Field: "content.category", Operator: "eq", Value: "tech"},
+				{Field: "metadata.tags", Operator: "contains", Value: "[\"featured\"]"},
+				{Field: "content.author.reputation", Operator: "gte", Value: "4.5"},
+			},
+			selects:      queryparser.Select{Fields: []string{"id", "content.title", "content.author.name", "metadata.published_date"}},
+			expectedSQL:  "SELECT id, content->>'title' as content.title, content->'author'->>'name' as content.author.name, metadata->>'published_date' as metadata.published_date FROM items WHERE content->>'category' = ? AND metadata->'tags' @> ?::jsonb AND (content->'author'->>'reputation')::float >= ?",
+			expectedArgs: []interface{}{"tech", "[\"featured\"]", "4.5"},
+			expectError:  false,
+		},
+		{
+			name:         "Empty filters with specific selects",
+			table:        "items",
+			filters:      []queryparser.Filter{},
+			selects:      queryparser.Select{Fields: []string{"id", "content.title", "metadata.created_at"}},
+			expectedSQL:  "SELECT id, content->>'title' as content.title, metadata->>'created_at' as metadata.created_at FROM items",
+			expectedArgs: []interface{}{},
+			expectError:  false,
 		},
 	}
 

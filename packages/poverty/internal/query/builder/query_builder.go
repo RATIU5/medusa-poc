@@ -46,34 +46,12 @@ func buildJsonbSelect(field string) string {
 	if len(parts) == 1 {
 		return field
 	}
-	return fmt.Sprintf("%s->>'%s' as %s", parts[0], strings.Join(parts[1:], "']['"), field)
-}
-
-func buildWhereClause(filter queryparser.Filter) (squirrel.Sqlizer, error) {
-	feild := buildJsonbField(filter.Field)
-
-	switch filter.Operator {
-	case "eq":
-		return squirrel.Eq{feild: filter.Value}, nil
-	case "neq":
-		return squirrel.NotEq{feild: filter.Value}, nil
-	case "gt":
-		return squirrel.Gt{feild: filter.Value}, nil
-	case "gte":
-		return squirrel.GtOrEq{feild: filter.Value}, nil
-	case "lt":
-		return squirrel.Lt{feild: filter.Value}, nil
-	case "lte":
-		return squirrel.LtOrEq{feild: filter.Value}, nil
-	case "like":
-		return squirrel.Like{feild: filter.Value}, nil
-	case "ilike":
-		return squirrel.ILike{feild: filter.Value}, nil
-	case "contains":
-		return squirrel.Expr(fmt.Sprintf("%s @> ?::jsonb", buildJsonbContainsField(filter.Field)), filter.Value), nil
-	default:
-		return nil, fmt.Errorf("unsupported operator: %s", filter.Operator)
+	if len(parts) == 2 {
+		return fmt.Sprintf("%s->>'%s' as %s", parts[0], parts[1], field)
 	}
+	return fmt.Sprintf("%s->%s->>'%s' as %s", parts[0],
+		strings.Join(quoteParts(parts[1:len(parts)-1]), "->"),
+		parts[len(parts)-1], field)
 }
 
 func buildJsonbField(field string) string {
@@ -81,13 +59,70 @@ func buildJsonbField(field string) string {
 	if len(parts) == 1 {
 		return field
 	}
-	return fmt.Sprintf("%s->>'%s'", parts[0], strings.Join(parts[1:], "']['"))
+	if len(parts) == 2 {
+		return fmt.Sprintf("%s->>'%s'", parts[0], parts[1])
+	}
+	return fmt.Sprintf("%s->%s->>'%s'", parts[0],
+		strings.Join(quoteParts(parts[1:len(parts)-1]), "->"),
+		parts[len(parts)-1])
 }
 
-func buildJsonbContainsField(field string) string {
+func quoteParts(parts []string) []string {
+	quoted := make([]string, len(parts))
+	for i, part := range parts {
+		quoted[i] = fmt.Sprintf("'%s'", part)
+	}
+	return quoted
+}
+
+func buildJsonbContains(field, value string) squirrel.Sqlizer {
 	parts := strings.Split(field, ".")
 	if len(parts) == 1 {
-		return field
+		return squirrel.Expr(fmt.Sprintf("%s @> ?::jsonb", field), value)
 	}
-	return parts[0]
+	if len(parts) == 2 {
+		return squirrel.Expr(fmt.Sprintf("%s->'%s' @> ?::jsonb", parts[0], parts[1]), value)
+	}
+	jsonPath := fmt.Sprintf("%s->%s", parts[0], strings.Join(quoteParts(parts[1:len(parts)-1]), "->"))
+	return squirrel.Expr(fmt.Sprintf("%s->'%s' @> ?::jsonb", jsonPath, parts[len(parts)-1]), value)
+}
+
+func buildWhereClause(filter queryparser.Filter) (squirrel.Sqlizer, error) {
+	field := buildJsonbField(filter.Field)
+
+	switch filter.Operator {
+	case "eq", "neq", "gt", "gte", "lt", "lte":
+		return buildComparisonClause(field, filter.Operator, filter.Value)
+	case "like":
+		return squirrel.Like{field: filter.Value}, nil
+	case "ilike":
+		return squirrel.ILike{field: filter.Value}, nil
+	case "contains":
+		return buildJsonbContains(filter.Field, filter.Value), nil
+	default:
+		return nil, fmt.Errorf("unsupported operator: %s", filter.Operator)
+	}
+}
+
+func buildComparisonClause(field, operator, value string) (squirrel.Sqlizer, error) {
+	if strings.Contains(field, "->") && (operator == "gt" || operator == "gte" || operator == "lt" || operator == "lte") {
+		field = fmt.Sprintf("(%s)::int", field)
+	}
+
+	switch operator {
+	case "eq":
+		return squirrel.Eq{field: value}, nil
+	case "neq":
+		return squirrel.NotEq{field: value}, nil
+	case "gt":
+		return squirrel.Gt{field: value}, nil
+	case "gte":
+		return squirrel.GtOrEq{field: value}, nil
+	case "lt":
+		return squirrel.Lt{field: value}, nil
+	case "lte":
+		return squirrel.LtOrEq{field: value}, nil
+	default:
+		return nil, fmt.Errorf("unsupported operator: %s", operator)
+	}
 }
