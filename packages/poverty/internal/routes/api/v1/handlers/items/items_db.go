@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 
+	querybuilder "github.com/RATIU5/medusa-poc/internal/query/builder"
+	queryparser "github.com/RATIU5/medusa-poc/internal/query/parser"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -15,32 +17,6 @@ import (
 type Database interface {
 	ExecuteQueryRow(ctx context.Context, query string, args ...interface{}) pgx.Row
 	ExecuteTransaction(ctx context.Context, fn func(pgx.Tx) error) error
-}
-
-func (i *ItemsHandler) getItem(ctx context.Context, id string) (*Item, error) {
-	var item Item
-	query := `
-		SELECT id, title, parent_id, content, metadata, created_at, updated_at 
-		FROM items
-		WHERE id = $1`
-	err := i.db.ExecuteQueryRow(ctx, query, id).Scan(
-		&item.ID,
-		&item.Title,
-		&item.ParentID,
-		&item.Content,
-		&item.Metadata,
-		&item.CreatedAt,
-		&item.UpdatedAt,
-	)
-
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrItemNotFound
-		}
-		return nil, err
-	}
-
-	return &item, nil
 }
 
 func (i *ItemsHandler) updatePartialItem(ctx context.Context, itemUUID uuid.UUID, newItem *PartialUpdateItem) error {
@@ -70,13 +46,63 @@ func (i *ItemsHandler) updatePartialItem(ctx context.Context, itemUUID uuid.UUID
 	})
 }
 
+func (i *ItemsHandler) getItem(ctx context.Context, id string, filters []queryparser.Filter, selects queryparser.Select) (map[string]interface{}, error) {
+	idFilter := queryparser.Filter{
+		Field:    "id",
+		Operator: "eq",
+		Value:    id,
+	}
+	filters = append(filters, idFilter)
+
+	query, args, err := querybuilder.BuildQuery("items", filters, selects)
+	if err != nil {
+		return nil, fmt.Errorf("error building query: %w", err)
+	}
+
+	rows, err := i.db.ExecuteQuery(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("error executing query: %w", err)
+	}
+	defer rows.Close()
+
+	var rawItem map[string]interface{}
+	if rows.Next() {
+		rawItem, err = pgx.RowToMap(rows)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning row: %w", err)
+		}
+	} else {
+		return nil, ErrItemNotFound
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating rows: %w", err)
+	}
+
+	reshapedItem := reshapeResponse(rawItem, i.logger)
+
+	return reshapedItem, nil
+}
+
 func getExistingItem(ctx context.Context, tx pgx.Tx, id string) (*PartialUpdateItem, error) {
+	filters := []queryparser.Filter{
+		{
+			Field:    "id",
+			Operator: "eq",
+			Value:    id,
+		},
+	}
+	selects := queryparser.Select{
+		Fields: []string{"title", "parent_id", "content", "metadata"},
+	}
+
+	query, args, err := querybuilder.BuildQuery("items", filters, selects)
+	if err != nil {
+		return nil, fmt.Errorf("error building query: %w", err)
+	}
+
 	var existingItem PartialUpdateItem
-	query := `
-		SELECT title, parent_id, content, metadata
-		FROM items
-		WHERE id = $1`
-	err := tx.QueryRow(ctx, query, id).Scan(
+	err = tx.QueryRow(ctx, query, args...).Scan(
 		&existingItem.Title,
 		&existingItem.ParentID,
 		&existingItem.Content,
@@ -183,20 +209,26 @@ func (i *ItemsHandler) createItem(ctx context.Context, item *Item) error {
 	})
 }
 
-func (i *ItemsHandler) getAllItems(ctx context.Context) ([]Item, error) {
-	rows, err := i.db.ExecuteQuery(ctx, "SELECT id, title, parent_id, content, metadata, created_at, updated_at FROM items")
+func (i *ItemsHandler) getAllItems(ctx context.Context, filters []queryparser.Filter, selects queryparser.Select) ([]map[string]interface{}, error) {
+	query, args, err := querybuilder.BuildQuery("items", filters, selects)
+	if err != nil {
+		return nil, fmt.Errorf("error building query: %w", err)
+	}
+
+	rows, err := i.db.ExecuteQuery(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get items: %w", err)
 	}
 	defer rows.Close()
 
-	var items []Item
+	var items []map[string]interface{}
 	for rows.Next() {
-		var item Item
-		if err := rows.Scan(&item.ID, &item.Title, &item.ParentID, &item.Content, &item.Metadata, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		rawItem, err := pgx.RowToMap(rows)
+		if err != nil {
 			return nil, fmt.Errorf("failed to scan item: %w", err)
 		}
-		items = append(items, item)
+		reshapedItem := reshapeResponse(rawItem, i.logger)
+		items = append(items, reshapedItem)
 	}
 
 	if err := rows.Err(); err != nil {

@@ -5,11 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 var (
@@ -97,4 +100,59 @@ func mustMarshal(v interface{}) []byte {
 		panic(err)
 	}
 	return b
+}
+
+func convertToUUIDString(id interface{}, logger *log.Logger) string {
+	var u uuid.UUID
+	var err error
+
+	switch v := id.(type) {
+	case []byte:
+		u, err = uuid.FromBytes(v)
+	case [16]byte:
+		u, err = uuid.FromBytes(v[:])
+	case string:
+		u, err = uuid.Parse(v)
+	default:
+		logger.Warn("Unexpected type for UUID", zap.String("type", fmt.Sprintf("%T", v)))
+		return fmt.Sprintf("%v", v)
+	}
+
+	if err != nil {
+		logger.Error("Failed to parse UUID", zap.Error(err))
+		return fmt.Sprintf("%v", id)
+	}
+
+	return u.String()
+}
+
+func reshapeResponse(rawItem map[string]interface{}, logger *log.Logger) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	for key, value := range rawItem {
+		parts := strings.Split(key, ".")
+		current := result
+		for i, part := range parts {
+			if i == len(parts)-1 {
+				if part == "id" || part == "parent_id" {
+					current[part] = convertToUUIDString(value, logger)
+				} else {
+					if strValue, ok := value.(string); ok {
+						var jsonValue interface{}
+						if err := json.Unmarshal([]byte(strValue), &jsonValue); err == nil {
+							value = jsonValue
+						}
+					}
+					current[part] = value
+				}
+			} else {
+				if _, exists := current[part]; !exists {
+					current[part] = make(map[string]interface{})
+				}
+				current = current[part].(map[string]interface{})
+			}
+		}
+	}
+
+	return result
 }

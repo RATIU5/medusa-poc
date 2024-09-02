@@ -16,12 +16,16 @@ type Select struct {
 	Fields []string
 }
 
-func ParseQuery(query url.Values) ([]Filter, Select, error) {
+func ParseQuery(queries map[string]string) ([]Filter, Select, error) {
 	var filters []Filter
 	var sel Select
 
-	filterStr := query.Get("filter")
-	if filterStr != "" {
+	filterStr, ok := queries["filter"]
+	if ok && filterStr != "" {
+		filterStr, err := url.QueryUnescape(filterStr)
+		if err != nil {
+			return nil, Select{}, fmt.Errorf("failed to unescape filter string: %v", err)
+		}
 		filterParts := strings.Split(filterStr, ",")
 		for _, part := range filterParts {
 			f, err := parseFilter(part)
@@ -32,9 +36,17 @@ func ParseQuery(query url.Values) ([]Filter, Select, error) {
 		}
 	}
 
-	selectStr := query.Get("select")
-	if selectStr != "" {
+	selectStr, ok := queries["select"]
+	if ok && selectStr != "" {
+		selectStr, err := url.QueryUnescape(selectStr)
+		if err != nil {
+			return nil, Select{}, fmt.Errorf("failed to unescape select string: %v", err)
+		}
 		sel.Fields = strings.Split(selectStr, ",")
+	}
+
+	if len(filters) == 0 {
+		filters = nil
 	}
 
 	return filters, sel, nil

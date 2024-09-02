@@ -2,6 +2,7 @@ package querybuilder
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -34,6 +35,10 @@ func BuildQuery(table string, filters []queryparser.Filter, selects queryparser.
 		return "", nil, fmt.Errorf("error building SQL: %w", err)
 	}
 
+	for i := 1; i <= len(args); i++ {
+		sql = strings.Replace(sql, "?", fmt.Sprintf("$%d", i), 1)
+	}
+
 	if args == nil {
 		args = []interface{}{}
 	}
@@ -47,11 +52,13 @@ func buildJsonbSelect(field string) string {
 		return field
 	}
 	if len(parts) == 2 {
-		return fmt.Sprintf("%s->>'%s' as %s", parts[0], parts[1], field)
+		return fmt.Sprintf("%s->>'%s' as \"%s\"", parts[0], parts[1], field)
 	}
-	return fmt.Sprintf("%s->%s->>'%s' as %s", parts[0],
+	jsonPath := fmt.Sprintf("%s->%s->>'%s'",
+		parts[0],
 		strings.Join(quoteParts(parts[1:len(parts)-1]), "->"),
-		parts[len(parts)-1], field)
+		parts[len(parts)-1])
+	return fmt.Sprintf("%s as \"%s\"", jsonPath, field)
 }
 
 func buildJsonbField(field string) string {
@@ -106,7 +113,11 @@ func buildWhereClause(filter queryparser.Filter) (squirrel.Sqlizer, error) {
 
 func buildComparisonClause(field, operator, value string) (squirrel.Sqlizer, error) {
 	if strings.Contains(field, "->") && (operator == "gt" || operator == "gte" || operator == "lt" || operator == "lte") {
-		field = fmt.Sprintf("(%s)::int", field)
+		if _, err := strconv.Atoi(value); err == nil {
+			field = fmt.Sprintf("(%s)::int", field)
+		} else {
+			field = fmt.Sprintf("(%s)::float", field)
+		}
 	}
 
 	switch operator {
