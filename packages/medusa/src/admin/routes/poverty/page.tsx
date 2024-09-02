@@ -10,7 +10,9 @@ const CustomPage = () => {
   };
   return (
     <Container>
-      <Button onClick={clickHandler}>Click me</Button>
+      <Button onClick={clickHandler} variant="secondary">
+        Click me
+      </Button>
     </Container>
   );
 };
