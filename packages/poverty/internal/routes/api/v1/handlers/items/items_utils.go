@@ -28,6 +28,7 @@ var (
 	ErrNoItemCreated        = errors.New("no item was created")
 	ErrTitleRequired        = errors.New("title is required")
 	ErrContentRequired      = errors.New("content is required")
+	ErrNotImplemented       = errors.New("not implemented")
 )
 
 func handleError(c *fiber.Ctx, logger *log.Logger, err error) error {
@@ -51,6 +52,10 @@ func handleError(c *fiber.Ctx, logger *log.Logger, err error) error {
 	case ErrNoItemCreated:
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create item",
+		})
+	case ErrNotImplemented:
+		return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{
+			"error": "Not implemented",
 		})
 	default:
 		logger.Error("failed to process request", "error", err)
@@ -103,6 +108,10 @@ func mustMarshal(v interface{}) []byte {
 }
 
 func convertToUUIDString(id interface{}, logger *log.Logger) string {
+	if id == nil {
+		return "<nil>"
+	}
+
 	var u uuid.UUID
 	var err error
 
@@ -112,6 +121,9 @@ func convertToUUIDString(id interface{}, logger *log.Logger) string {
 	case [16]byte:
 		u, err = uuid.FromBytes(v[:])
 	case string:
+		if v == "<nil>" {
+			return "<nil>"
+		}
 		u, err = uuid.Parse(v)
 	default:
 		logger.Warn("Unexpected type for UUID", zap.String("type", fmt.Sprintf("%T", v)))
@@ -135,7 +147,12 @@ func reshapeResponse(rawItem map[string]interface{}, logger *log.Logger) map[str
 		for i, part := range parts {
 			if i == len(parts)-1 {
 				if part == "id" || part == "parent_id" {
-					current[part] = convertToUUIDString(value, logger)
+					convertedValue := convertToUUIDString(value, logger)
+					if convertedValue == "<nil>" || convertedValue == "" {
+						current[part] = nil
+					} else {
+						current[part] = convertedValue
+					}
 				} else {
 					if strValue, ok := value.(string); ok {
 						var jsonValue interface{}

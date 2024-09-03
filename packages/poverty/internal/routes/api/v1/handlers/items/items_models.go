@@ -3,6 +3,7 @@ package v1HandlersItem
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +18,16 @@ type Item struct {
 	Metadata  json.RawMessage `json:"metadata,omitempty"`
 	CreatedAt time.Time       `json:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at"`
+}
+
+func (i *Item) Print() {
+	fmt.Printf("ID: %s\n", i.ID)
+	fmt.Printf("Title: %s\n", i.Title)
+	fmt.Printf("ParentID: %s\n", i.ParentID)
+	fmt.Printf("Content: %s\n", i.Content)
+	fmt.Printf("Metadata: %s\n", i.Metadata)
+	fmt.Printf("CreatedAt: %s\n", i.CreatedAt)
+	fmt.Printf("UpdatedAt: %s\n", i.UpdatedAt)
 }
 
 func (item *Item) validateContent() error {
