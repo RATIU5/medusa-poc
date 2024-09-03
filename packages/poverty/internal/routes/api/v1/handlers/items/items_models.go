@@ -10,20 +10,21 @@ import (
 )
 
 type Item struct {
-	ID        uuid.UUID              `json:"id"`
-	Title     string                 `json:"title"`
-	ParentID  *uuid.UUID             `json:"parent_id,omitempty"`
-	Content   json.RawMessage        `json:"content"`
-	Metadata  map[string]interface{} `json:"metadata,omitempty"`
-	CreatedAt time.Time              `json:"created_at"`
-	UpdatedAt time.Time              `json:"updated_at"`
+	ID        uuid.UUID       `json:"id"`
+	Title     string          `json:"title"`
+	ParentID  *uuid.UUID      `json:"parent_id,omitempty"`
+	Content   json.RawMessage `json:"content"`
+	Metadata  json.RawMessage `json:"metadata,omitempty"`
+	CreatedAt time.Time       `json:"created_at"`
+	UpdatedAt time.Time       `json:"updated_at"`
 }
 
 func (item *Item) validateContent() error {
-	if len(item.Content) == 0 {
-		return errors.New("content cannot be empty")
-	}
-	return nil
+	return validateJSONObject(item.Content, "content")
+}
+
+func (item *Item) validateMetadata() error {
+	return validateJSONObject(item.Metadata, "metadata")
 }
 
 type PartialUpdateItem struct {

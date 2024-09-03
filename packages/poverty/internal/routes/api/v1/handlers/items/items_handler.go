@@ -38,6 +38,10 @@ func (i *ItemsHandler) GetAllItemsHandler(c *fiber.Ctx) error {
 		return handleError(c, i.logger, err)
 	}
 
+	if len(items) == 0 {
+		items = []map[string]interface{}{}
+	}
+
 	return c.Status(fiber.StatusOK).JSON(items)
 }
 
@@ -95,6 +99,14 @@ func (i *ItemsHandler) CreateItemHandler(c *fiber.Ctx) error {
 	var item Item
 	if err := c.BodyParser(&item); err != nil {
 		return handleError(c, i.logger, ErrInvalidRequestBody)
+	}
+
+	// Validate content separately
+	if err := validateJSONObject(item.Content, "content"); err != nil {
+		return handleError(c, i.logger, err)
+	}
+	if err := validateJSONObject(item.Metadata, "metadata"); err != nil {
+		return handleError(c, i.logger, err)
 	}
 
 	err := i.createItem(c.Context(), &item)
@@ -165,9 +177,23 @@ func (i *ItemsHandler) GetChildrenHandler(c *fiber.Ctx) error {
 		return handleError(c, i.logger, ErrInvalidItemID)
 	}
 
-	children, err := i.getChildren(c.Context(), itemUUID)
+	queryArgs := make(map[string]string)
+	c.Request().URI().QueryArgs().VisitAll(func(key, value []byte) {
+		queryArgs[string(key)] = string(value)
+	})
+
+	filters, selects, err := queryparser.ParseQuery(queryArgs)
+	if err != nil {
+		return handleError(c, i.logger, fmt.Errorf("error parsing query: %w", err))
+	}
+
+	children, err := i.getChildren(c.Context(), itemUUID, filters, selects)
 	if err != nil {
 		return handleError(c, i.logger, err)
+	}
+
+	if len(children) == 0 {
+		children = []map[string]interface{}{}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(children)

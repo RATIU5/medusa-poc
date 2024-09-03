@@ -174,6 +174,9 @@ func (i *ItemsHandler) createItem(ctx context.Context, item *Item) error {
 	if err := item.validateContent(); err != nil {
 		return err
 	}
+	if err := item.validateMetadata(); err != nil {
+		return err
+	}
 
 	return i.db.ExecuteTransaction(ctx, func(tx pgx.Tx) error {
 		if item.ParentID != nil {
@@ -316,25 +319,40 @@ func (i *ItemsHandler) deleteItem(ctx context.Context, id uuid.UUID) error {
 	})
 }
 
-func (i *ItemsHandler) getChildren(ctx context.Context, id uuid.UUID) ([]Item, error) {
-	rows, err := i.db.ExecuteQuery(ctx, "SELECT id, title, parent_id, content, metadata, created_at, updated_at FROM items WHERE parent_id = $1", id)
+func (i *ItemsHandler) getChildren(ctx context.Context, id uuid.UUID, filters []queryparser.Filter, selects queryparser.Select) ([]map[string]interface{}, error) {
+	parentFilter := queryparser.Filter{
+		Field:    "parent_id",
+		Operator: "eq",
+		Value:    id.String(),
+	}
+	filters = append(filters, parentFilter)
+
+	query, args, err := querybuilder.BuildQuery("items", filters, selects)
+	if err != nil {
+		return nil, fmt.Errorf("error building query: %w", err)
+	}
+
+	i.logger.Debugf("query: %s", query)
+
+	rows, err := i.db.ExecuteQuery(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get children: %w", err)
 	}
 	defer rows.Close()
 
-	var items []Item = []Item{}
+	var children []map[string]interface{}
 	for rows.Next() {
-		var item Item
-		if err := rows.Scan(&item.ID, &item.Title, &item.ParentID, &item.Content, &item.Metadata, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		rawItem, err := pgx.RowToMap(rows)
+		if err != nil {
 			return nil, fmt.Errorf("failed to scan item: %w", err)
 		}
-		items = append(items, item)
+		reshapedItem := reshapeResponse(rawItem, i.logger)
+		children = append(children, reshapedItem)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating over items: %w", err)
 	}
 
-	return items, nil
+	return children, nil
 }

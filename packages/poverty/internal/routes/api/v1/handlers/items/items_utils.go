@@ -156,3 +156,21 @@ func reshapeResponse(rawItem map[string]interface{}, logger *log.Logger) map[str
 
 	return result
 }
+
+func validateJSONObject(data json.RawMessage, fieldName string) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	var jsonObj map[string]interface{}
+	err := json.Unmarshal(data, &jsonObj)
+	if err != nil {
+		return fmt.Errorf("%s must be a valid JSON object: %w", fieldName, err)
+	}
+
+	if len(jsonObj) == 0 {
+		return fmt.Errorf("%s must not be an empty JSON object", fieldName)
+	}
+
+	return nil
+}
