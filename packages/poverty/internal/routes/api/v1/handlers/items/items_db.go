@@ -212,12 +212,7 @@ func (i *ItemsHandler) createItem(ctx context.Context, item *Item) error {
 	})
 }
 
-func (i *ItemsHandler) getAllItems(ctx context.Context, filters []queryparser.Filter, selects queryparser.Select) ([]map[string]interface{}, error) {
-	query, args, err := querybuilder.BuildQuery("items", filters, selects)
-	if err != nil {
-		return nil, fmt.Errorf("error building query: %w", err)
-	}
-
+func (i *ItemsHandler) getAllItems(ctx context.Context, query string, args ...interface{}) ([]map[string]interface{}, error) {
 	rows, err := i.db.ExecuteQuery(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get items: %w", err)
@@ -230,6 +225,7 @@ func (i *ItemsHandler) getAllItems(ctx context.Context, filters []queryparser.Fi
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan item: %w", err)
 		}
+		fmt.Printf("rawItem: %v\n", rawItem)
 		reshapedItem := reshapeResponse(rawItem, i.logger)
 		items = append(items, reshapedItem)
 	}

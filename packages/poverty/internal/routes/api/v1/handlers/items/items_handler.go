@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RATIU5/medusa-poc/internal/database"
+	querybuilder "github.com/RATIU5/medusa-poc/internal/query/builder"
 	queryparser "github.com/RATIU5/medusa-poc/internal/query/parser"
 	"github.com/charmbracelet/log"
 	"github.com/gofiber/fiber/v2"
@@ -33,7 +34,12 @@ func (i *ItemsHandler) GetAllItemsHandler(c *fiber.Ctx) error {
 		return handleError(c, i.logger, fmt.Errorf("error parsing query: %w", err))
 	}
 
-	items, err := i.getAllItems(c.Context(), filters, selects)
+	query, args, err := querybuilder.BuildQuery("items", filters, selects)
+	if err != nil {
+		return fmt.Errorf("error building query: %w", err)
+	}
+
+	items, err := i.getAllItems(c.Context(), query, args...)
 	if err != nil {
 		return handleError(c, i.logger, err)
 	}
@@ -70,6 +76,8 @@ func (i *ItemsHandler) GetItemHandler(c *fiber.Ctx) error {
 }
 
 func (i *ItemsHandler) PartialUpdateItemHandler(c *fiber.Ctx) error {
+	return handleError(c, i.logger, ErrNotImplemented)
+
 	paramId := c.Params("id")
 	if paramId == "" {
 		return handleError(c, i.logger, ErrItemIDNotProvided)
