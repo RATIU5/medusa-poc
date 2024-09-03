@@ -16,7 +16,8 @@ func SetupRoutes(router fiber.Router, db *database.Database, logger *log.Logger)
 
 	item := items.Group(":id")
 	item.Get("/", itemHandlers.GetItemHandler)
-	item.Patch("/", itemHandlers.PartialUpdateItemHandler)
+	// @depricated
+	// item.Patch("/", itemHandlers.PartialUpdateItemHandler)
 	item.Put("/", itemHandlers.UpdateItemHandler)
 	item.Delete("/", itemHandlers.DeleteItemHandler)
 
