@@ -1,5 +1,11 @@
 import { defineRouteConfig } from '@medusajs/admin-shared';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  type DropResult,
+  type ResponderProvided,
+} from '@hello-pangea/dnd';
 import {
   ChatBubbleLeftRight,
   DotsSix,
@@ -18,40 +24,51 @@ import {
   Table,
   Label,
 } from '@medusajs/ui';
-import React, { useRef, useState } from 'react';
-import { DropResult, ResponderProvided } from 'react-beautiful-dnd';
+import React, { useState } from 'react';
 
-interface Item {
+type Item = {
   id: number;
   title: string;
   content: {
     slug: string;
   };
-}
+};
 
-const INITIAL_MAIN_ITEMS: Item[] = [
-  { id: 1, title: 'Home', content: { slug: '/' } },
-  { id: 2, title: 'About', content: { slug: '/about' } },
-  { id: 3, title: 'Contact', content: { slug: '/contact' } },
-];
+type NewNavItemPayload = {
+  title: string;
+  metadata: {
+    position: number;
+    type: 'header-link' | 'footer-link';
+  };
+  content: {
+    name: string;
+    slug: string;
+  };
+};
 
-const INITIAL_FOOTER_ITEMS: Item[] = [
-  { id: 1, title: 'Home', content: { slug: '/' } },
-  { id: 2, title: 'About', content: { slug: '/about' } },
-  { id: 3, title: 'Contact', content: { slug: '/contact' } },
-  { id: 4, title: 'FAQ', content: { slug: '/faq' } },
-  { id: 5, title: 'Privacy Policy', content: { slug: '/privacy-policy' } },
-  {
-    id: 6,
-    title: 'Terms & Conditions',
-    content: { slug: '/terms-and-conditions' },
-  },
-];
+type NewNavItemResponse = {
+  data: {
+    id: string;
+    title: string;
+    metadata: {
+      position: number;
+      type: 'header-link' | 'footer-link';
+    };
+    content: {
+      name: string;
+      slug: string;
+    };
+    parent_id: string;
+    created_at: string;
+    updated_at: string;
+  } | null;
+};
 
 const CustomPage = () => {
-  const [mainItems, setMainItems] = React.useState<Item[]>(INITIAL_MAIN_ITEMS);
-  const [footerItems, setFooterItems] =
-    React.useState<Item[]>(INITIAL_FOOTER_ITEMS);
+  const [mainItems, setMainItems] = useState<Item[]>([]);
+  const [footerItems, setFooterItems] = useState<Item[]>([]);
+  const [pageName, setPageName] = useState<string>();
+  const [pageSlug, setPageSlug] = useState<string>();
 
   function handleDragEndMain(result: DropResult, provided: ResponderProvided) {
     if (!result.destination) return;
@@ -62,23 +79,33 @@ const CustomPage = () => {
     setMainItems(newMainItems);
   }
 
-  const [pageName, setPageName] = useState();
-  const [pageSlug, setPageSlug] = useState();
   function handlePageNameChange(event) {
     setPageName(event.target.value);
   }
   function handleSlugNameChange(event) {
     setPageSlug(event.target.value);
   }
-  function handleNewLinkClick() {
-    setMainItems([
-      ...mainItems,
-      {
-        id: mainItems.length + 1,
-        title: pageName,
-        content: { slug: pageSlug },
+  async function handleNewHeaderLinkSubmit() {
+    const payload: NewNavItemPayload = {
+      title: pageName + pageSlug,
+      metadata: {
+        position: mainItems.length + 1,
+        type: 'header-link',
       },
-    ]);
+      content: {
+        name: pageName,
+        slug: pageSlug,
+      },
+    };
+    const res = await fetch('/admin/poverty/navigation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = (await res.json()) as NewNavItemResponse;
+    console.log(data);
   }
 
   function handleDragEndFooter(
@@ -144,7 +171,9 @@ const CustomPage = () => {
                         <Drawer.Close asChild>
                           <Button variant="secondary">Cancel</Button>
                         </Drawer.Close>
-                        <Button onClick={handleNewLinkClick}>Save</Button>
+                        <Button onClick={handleNewHeaderLinkSubmit}>
+                          Save
+                        </Button>
                       </Drawer.Footer>
                     </Drawer.Content>
                   </Drawer>
@@ -152,11 +181,11 @@ const CustomPage = () => {
                 <Table>
                   <Table.Header>
                     <Table.Row>
-                      <Table.HeaderCell></Table.HeaderCell>
+                      <Table.HeaderCell />
                       <Table.HeaderCell>Page Title</Table.HeaderCell>
                       <Table.HeaderCell>Page Slug</Table.HeaderCell>
-                      <Table.HeaderCell className="text-right"></Table.HeaderCell>
-                      <Table.HeaderCell></Table.HeaderCell>
+                      <Table.HeaderCell className="text-right" />
+                      <Table.HeaderCell />
                     </Table.Row>
                   </Table.Header>
                   <DragDropContext onDragEnd={handleDragEndMain}>
@@ -258,11 +287,11 @@ const CustomPage = () => {
                 <Table>
                   <Table.Header>
                     <Table.Row>
-                      <Table.HeaderCell></Table.HeaderCell>
+                      <Table.HeaderCell />
                       <Table.HeaderCell>Page Title</Table.HeaderCell>
                       <Table.HeaderCell>Page Slug</Table.HeaderCell>
-                      <Table.HeaderCell className="text-right"></Table.HeaderCell>
-                      <Table.HeaderCell></Table.HeaderCell>
+                      <Table.HeaderCell className="text-right" />
+                      <Table.HeaderCell />
                     </Table.Row>
                   </Table.Header>
                   <DragDropContext onDragEnd={handleDragEndFooter}>
