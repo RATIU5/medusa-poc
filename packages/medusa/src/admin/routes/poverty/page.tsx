@@ -1,17 +1,17 @@
-import { defineRouteConfig } from '@medusajs/admin-shared';
+import { defineRouteConfig } from "@medusajs/admin-shared";
 import {
   DragDropContext,
   Droppable,
   Draggable,
   type DropResult,
   type ResponderProvided,
-} from '@hello-pangea/dnd';
+} from "@hello-pangea/dnd";
 import {
   ChatBubbleLeftRight,
   DotsSix,
   EllipsisHorizontal,
   PlusMini,
-} from '@medusajs/icons';
+} from "@medusajs/icons";
 import {
   Container,
   Tabs,
@@ -23,8 +23,8 @@ import {
   Heading,
   Table,
   Label,
-} from '@medusajs/ui';
-import React, { useState } from 'react';
+} from "@medusajs/ui";
+import { useState } from "react";
 
 type Item = {
   id: number;
@@ -38,7 +38,7 @@ type NewNavItemPayload = {
   title: string;
   metadata: {
     position: number;
-    type: 'header-link' | 'footer-link';
+    type: "header-link" | "footer-link";
   };
   content: {
     name: string;
@@ -52,7 +52,7 @@ type NewNavItemResponse = {
     title: string;
     metadata: {
       position: number;
-      type: 'header-link' | 'footer-link';
+      type: "header-link" | "footer-link";
     };
     content: {
       name: string;
@@ -90,17 +90,17 @@ const CustomPage = () => {
       title: pageName + pageSlug,
       metadata: {
         position: mainItems.length + 1,
-        type: 'header-link',
+        type: "header-link",
       },
       content: {
         name: pageName,
         slug: pageSlug,
       },
     };
-    const res = await fetch('/admin/poverty/navigation', {
-      method: 'POST',
+    const res = await fetch("/admin/poverty/navigation", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
     });
@@ -412,7 +412,7 @@ const CustomPage = () => {
 };
 
 export const config = defineRouteConfig({
-  label: 'Poverty CMS',
+  label: "Poverty CMS",
 
   icon: ChatBubbleLeftRight,
 });
