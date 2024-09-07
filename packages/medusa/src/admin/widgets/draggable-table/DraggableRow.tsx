@@ -8,13 +8,13 @@ import { DotsSix, EllipsisHorizontal } from "@medusajs/icons";
 interface DraggableRowProps<T> {
   row: Row<T>;
   isActive: boolean;
-  animationOffset: number;
+  isDragOverlay?: boolean;
 }
 
 const DraggableRow = <T extends { id: string }>({
   row,
   isActive,
-  animationOffset,
+  isDragOverlay = false,
 }: DraggableRowProps<T>) => {
   const {
     attributes,
@@ -26,17 +26,14 @@ const DraggableRow = <T extends { id: string }>({
   } = useSortable({ id: row.original.id });
 
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(
-      transform
-        ? { ...transform, y: transform.y + animationOffset }
-        : { y: animationOffset }
-    ),
-    transition: [transition, animationOffset ? "transform 300ms ease" : ""]
-      .filter(Boolean)
-      .join(", "),
+    transform: CSS.Transform.toString(transform),
+    transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isActive ? 1 : 0,
-    position: isActive ? "relative" : "static",
+    position: isDragOverlay ? "relative" : undefined,
+    boxShadow: isDragOverlay
+      ? "0 0 0 1px rgba(63, 63, 68, 0.05), 0 1px 3px 0 rgba(34, 33, 81, 0.15)"
+      : undefined,
   };
 
   return (

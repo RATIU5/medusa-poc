@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   useReactTable,
@@ -10,8 +10,8 @@ import { Table } from "@medusajs/ui";
 import {
   DndContext,
   DragEndEvent,
-  DragStartEvent,
   DragOverlay,
+  DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -20,8 +20,8 @@ import {
 import {
   SortableContext,
   verticalListSortingStrategy,
-  arrayMove,
 } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import DraggableRow from "./DraggableRow";
 
@@ -37,9 +37,6 @@ function DraggableTable<T extends { id: string }>({
   setData,
 }: DraggableTableProps<T>) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [animationOffsets, setAnimationOffsets] = useState<
-    Record<string, number>
-  >({});
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -52,53 +49,30 @@ function DraggableTable<T extends { id: string }>({
     getCoreRowModel: getCoreRowModel(),
   });
 
-  useEffect(() => {
-    if (Object.keys(animationOffsets).length > 0) {
-      const timer = setTimeout(() => {
-        setAnimationOffsets({});
-      }, 300); // Duration of the animation
-      return () => clearTimeout(timer);
-    }
-  }, [animationOffsets]);
-
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string);
-  };
+  }, []);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
 
-    if (active.id !== over?.id) {
-      setData((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over?.id);
+      if (active.id !== over?.id) {
+        setData((items) => {
+          const oldIndex = items.findIndex((item) => item.id === active.id);
+          const newIndex = items.findIndex((item) => item.id === over?.id);
+          return arrayMove(items, oldIndex, newIndex);
+        });
+      }
 
-        // Calculate offsets for animation
-        const newOffsets: Record<string, number> = {};
-        const movingDown = newIndex > oldIndex;
-        const start = movingDown ? oldIndex : newIndex;
-        const end = movingDown ? newIndex : oldIndex;
+      setActiveId(null);
+    },
+    [setData]
+  );
 
-        for (let i = start; i <= end; i++) {
-          if (i === oldIndex) {
-            newOffsets[items[i].id] = (newIndex - oldIndex) * 100; // 100 is the assumed height of a row
-          } else {
-            newOffsets[items[i].id] = movingDown ? -100 : 100;
-          }
-        }
-
-        setAnimationOffsets(newOffsets);
-
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-
+  const handleDragCancel = useCallback(() => {
     setActiveId(null);
-  };
-
-  const handleDragCancel = () => {
-    setActiveId(null);
-  };
+  }, []);
 
   return (
     <DndContext
@@ -137,7 +111,6 @@ function DraggableTable<T extends { id: string }>({
                 key={row.original.id}
                 row={row}
                 isActive={activeId === row.original.id}
-                animationOffset={animationOffsets[row.original.id] || 0}
               />
             ))}
           </SortableContext>
@@ -148,9 +121,13 @@ function DraggableTable<T extends { id: string }>({
           <Table>
             <Table.Body>
               <DraggableRow
-                row={table.getRowModel().rowsById[activeId]}
+                row={
+                  table
+                    .getRowModel()
+                    .rows.find((row) => row.original.id === activeId)!
+                }
                 isActive={true}
-                animationOffset={0}
+                isDragOverlay
               />
             </Table.Body>
           </Table>
