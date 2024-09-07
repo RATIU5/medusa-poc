@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   useReactTable,
@@ -16,6 +16,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  closestCenter,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -29,9 +30,13 @@ interface DraggableTableProps<T extends { id: string }> {
   columns: ColumnDef<T>[];
   data: T[];
   setData: Dispatch<SetStateAction<T[]>>;
+  isLoading: boolean;
+  error: Error;
 }
 
 function DraggableTable<T extends { id: string }>({
+  isLoading,
+  error,
   columns,
   data,
   setData,
@@ -39,40 +44,55 @@ function DraggableTable<T extends { id: string }>({
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
     useSensor(KeyboardSensor)
   );
+
+  const columnSizes = useMemo(() => {
+    return columns.map((col, index) => ({
+      id: col.id ?? String(index),
+      size: col.size ?? 150, // Default size if not specified
+    }));
+  }, [columns]);
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    defaultColumn: {
+      size: 150, // Default column size
+    },
   });
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
+  const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
-  }, []);
+  };
 
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-      if (active.id !== over?.id) {
-        setData((items) => {
-          const oldIndex = items.findIndex((item) => item.id === active.id);
-          const newIndex = items.findIndex((item) => item.id === over?.id);
-          return arrayMove(items, oldIndex, newIndex);
-        });
-      }
+    if (active.id !== over?.id) {
+      setData((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over?.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
 
-      setActiveId(null);
-    },
-    [setData]
-  );
-
-  const handleDragCancel = useCallback(() => {
     setActiveId(null);
-  }, []);
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+  };
+
+  if (error) {
+    return <div>{error.message}</div>;
+  }
 
   return (
     <DndContext
@@ -80,15 +100,20 @@ function DraggableTable<T extends { id: string }>({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
+      collisionDetection={closestCenter}
       modifiers={[restrictToVerticalAxis]}
     >
-      <Table>
+      <Table className="w-full table-fixed">
         <Table.Header>
           {table.getHeaderGroups().map((headerGroup) => (
             <Table.Row key={headerGroup.id}>
-              <Table.HeaderCell></Table.HeaderCell>
+              <Table.HeaderCell className="w-[88px]"></Table.HeaderCell>
               {headerGroup.headers.map((header) => (
-                <Table.HeaderCell key={header.id}>
+                <Table.HeaderCell
+                  key={header.id}
+                  className="!w-auto overflow-hidden"
+                  style={{ width: header.getSize() }}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -97,28 +122,42 @@ function DraggableTable<T extends { id: string }>({
                       )}
                 </Table.HeaderCell>
               ))}
-              <Table.HeaderCell></Table.HeaderCell>
+              <Table.HeaderCell className="w-[88px]"></Table.HeaderCell>
             </Table.Row>
           ))}
         </Table.Header>
         <Table.Body>
-          <SortableContext
-            items={data.map((item) => item.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {table.getRowModel().rows.map((row) => (
-              <DraggableRow
-                key={row.original.id}
-                row={row}
-                isActive={activeId === row.original.id}
-              />
-            ))}
-          </SortableContext>
+          {isLoading ? (
+            table.getHeaderGroups().map((headerGroup) => (
+              <Table.Row key={headerGroup.id}>
+                <Table.Cell className="w-[88px]"></Table.Cell>
+                {headerGroup.headers.map((header) => (
+                  <Table.Cell
+                    key={header.id}
+                    className="!w-auto overflow-hidden"
+                    style={{ width: header.getSize() }}
+                  >
+                    <div className="w-full p-2 bg-white/5 rounded-full"></div>
+                  </Table.Cell>
+                ))}
+                <Table.HeaderCell className="w-[88px]"></Table.HeaderCell>
+              </Table.Row>
+            ))
+          ) : (
+            <SortableContext
+              items={data.map((item) => item.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {table.getRowModel().rows.map((row) => (
+                <DraggableRow key={row.original.id} row={row} />
+              ))}
+            </SortableContext>
+          )}
         </Table.Body>
       </Table>
       <DragOverlay>
         {activeId ? (
-          <Table>
+          <Table className="w-full table-fixed">
             <Table.Body>
               <DraggableRow
                 row={
@@ -126,7 +165,6 @@ function DraggableTable<T extends { id: string }>({
                     .getRowModel()
                     .rows.find((row) => row.original.id === activeId)!
                 }
-                isActive={true}
                 isDragOverlay
               />
             </Table.Body>

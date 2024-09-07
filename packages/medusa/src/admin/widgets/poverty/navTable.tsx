@@ -17,12 +17,6 @@ const columns: ColumnDef<Person>[] = [
   { header: "City", accessorKey: "city" },
 ];
 
-const data: Person[] = [
-  { id: "1", name: "John Doe", age: 30, city: "New York" },
-  { id: "2", name: "Jane Smith", age: 25, city: "London" },
-  { id: "3", name: "Bob Johnson", age: 35, city: "Paris" },
-];
-
 const NavTable = ({
   title,
   data: defaultData,
@@ -40,29 +34,19 @@ const NavTable = ({
 }) => {
   const [hData, hSetData] = useState<Person[]>(defaultData);
 
-  if (isPending || isFetching) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Heading level="h2">Loading items...</Heading>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Heading level="h2">Error loading items</Heading>
-      </div>
-    );
-  }
-
   return (
     <div className="pb-4">
       <div className="flex justify-between px-6 py-4">
         <Heading level="h1">{title}</Heading>
         <DrawerEl />
       </div>
-      <DraggableTable data={hData} columns={columns} setData={hSetData} />
+      <DraggableTable
+        isLoading={isFetching || isPending}
+        error={error}
+        data={hData}
+        columns={columns}
+        setData={hSetData}
+      />
     </div>
   );
 };

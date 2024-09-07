@@ -7,13 +7,11 @@ import { DotsSix, EllipsisHorizontal } from "@medusajs/icons";
 
 interface DraggableRowProps<T> {
   row: Row<T>;
-  isActive: boolean;
   isDragOverlay?: boolean;
 }
 
 const DraggableRow = <T extends { id: string }>({
   row,
-  isActive,
   isDragOverlay = false,
 }: DraggableRowProps<T>) => {
   const {
@@ -28,17 +26,19 @@ const DraggableRow = <T extends { id: string }>({
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isActive ? 1 : 0,
-    position: isDragOverlay ? "relative" : undefined,
-    boxShadow: isDragOverlay
-      ? "0 0 0 1px rgba(63, 63, 68, 0.05), 0 1px 3px 0 rgba(34, 33, 81, 0.15)"
-      : undefined,
+    width: isDragOverlay ? "100%" : undefined,
+    opacity: isDragging ? (isDragOverlay ? 1 : 0.5) : 1,
   };
 
   return (
-    <Table.Row ref={setNodeRef} style={style}>
-      <Table.Cell className="w-[40px] p-0">
+    <Table.Row
+      ref={setNodeRef}
+      style={style}
+      className={`transition-all duration-200 ${
+        isDragOverlay ? "shadow-lg z-50" : ""
+      }`}
+    >
+      <Table.Cell className="w-[88px] pr-4">
         <div
           {...attributes}
           {...listeners}
@@ -48,11 +48,19 @@ const DraggableRow = <T extends { id: string }>({
         </div>
       </Table.Cell>
       {row.getVisibleCells().map((cell) => (
-        <Table.Cell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        <Table.Cell
+          key={cell.id}
+          className="!w-auto overflow-hidden"
+          style={{
+            minWidth: isDragOverlay ? cell.column.getSize() : undefined,
+          }}
+        >
+          <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap">
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </div>
         </Table.Cell>
       ))}
-      <Table.Cell className="w-[40px] p-0">
+      <Table.Cell className="w-[88px] pl-4">
         <IconButton variant="transparent">
           <EllipsisHorizontal />
         </IconButton>
