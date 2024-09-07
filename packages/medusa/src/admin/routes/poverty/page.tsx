@@ -6,6 +6,7 @@ import HeaderNavDrawer from "../../widgets/poverty/navAddDrawer";
 import PovertyLayout from "../../layouts/povertyLayout";
 import { useQuery } from "@tanstack/react-query";
 import ky from "ky";
+import DraggableTable from "../../widgets/draggable-table/DraggableTable";
 
 export type NewNavItemResponse = {
   data:
@@ -45,35 +46,45 @@ const HeaderNavPage = () => {
     queryFn: async () => {
       const res = await fetch("/admin/poverty/navigation/header");
       const json = (await res.json()) as NewNavItemResponse;
+      return [
+        { id: "1", name: "John Doe", age: 30, city: "New York" },
+        { id: "2", name: "Jane Smith", age: 25, city: "London" },
+        { id: "3", name: "Bob Johnson", age: 35, city: "Paris" },
+      ];
       return json?.data ?? [];
     },
     initialData: () => [],
   });
 
+  const columns = [
+    { header: "Name", accessorKey: "name" },
+    { header: "Age", accessorKey: "age" },
+    { header: "City", accessorKey: "city" },
+  ];
+
+  const data = [
+    { id: "1", name: "John Doe", age: 30, city: "New York" },
+    { id: "2", name: "Jane Smith", age: 25, city: "London" },
+    { id: "3", name: "Bob Johnson", age: 35, city: "Paris" },
+    { id: "4", name: "Kevin Bacon", age: 23, city: "Sydney" },
+  ];
+
   return (
     <Container className="p-0">
       <div className="w-full">
+        {/* <DraggableTable columns={columns} data={data} /> */}
         <NavTable
-          title="Header Links"
+          title="Footer Links"
           isPending={hIsPending}
           isFetching={hIsFetching}
           error={hError}
-          items={hData}
+          data={data}
           DrawerEl={withProps(HeaderNavDrawer, {
-            drawerTitle: "Add New Header Link",
+            drawerTitle: "Add New Footer Link",
             drawerDescription:
-              "Add a new link to the header navigation of the store.",
+              "Add a new link to the footer navigation of the store.",
           })}
         />
-        {/* <NavTable
-            title="Footer Links"
-            items={footerItems}
-            DrawerEl={withProps(HeaderNavDrawer, {
-              drawerTitle: "Add New Footer Link",
-              drawerDescription:
-                "Add a new link to the footer navigation of the store.",
-            })}
-          /> */}
       </div>
     </Container>
   );

@@ -1,36 +1,44 @@
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  type DropResult,
-  type ResponderProvided,
-} from "@hello-pangea/dnd";
-import { Heading, Table } from "@medusajs/ui";
+import { Heading } from "@medusajs/ui";
 import type { NewNavItemResponse } from "src/admin/routes/poverty/page";
-import navRow from "./navRow";
+import DraggableTable from "../draggable-table/DraggableTable";
+import { ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
+
+interface Person {
+  id: string;
+  name: string;
+  age: number;
+  city: string;
+}
+
+const columns: ColumnDef<Person>[] = [
+  { header: "Name", accessorKey: "name" },
+  { header: "Age", accessorKey: "age" },
+  { header: "City", accessorKey: "city" },
+];
+
+const data: Person[] = [
+  { id: "1", name: "John Doe", age: 30, city: "New York" },
+  { id: "2", name: "Jane Smith", age: 25, city: "London" },
+  { id: "3", name: "Bob Johnson", age: 35, city: "Paris" },
+];
 
 const NavTable = ({
   title,
-  items,
+  data: defaultData,
   DrawerEl,
   isPending,
   isFetching,
   error,
 }: {
   title: string;
-  items: NewNavItemResponse["data"];
+  data: Person[];
   DrawerEl: React.ComponentType;
   isPending: boolean;
   isFetching: boolean;
   error: Error;
 }) => {
-  function handleDragEnd(result: DropResult, provided: ResponderProvided) {
-    if (!result.destination) return;
-
-    const newItems = Array.from(items);
-    const [newReorderedItems] = newItems.splice(result.source.index, 1);
-    newItems.splice(result.destination.index, 0, newReorderedItems);
-  }
+  const [hData, hSetData] = useState<Person[]>(defaultData);
 
   if (isPending || isFetching) {
     return (
@@ -54,37 +62,7 @@ const NavTable = ({
         <Heading level="h1">{title}</Heading>
         <DrawerEl />
       </div>
-      <Table>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell />
-            <Table.HeaderCell>Page Title</Table.HeaderCell>
-            <Table.HeaderCell>Page Slug</Table.HeaderCell>
-            <Table.HeaderCell className="text-right" />
-            <Table.HeaderCell />
-          </Table.Row>
-        </Table.Header>
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="items">
-            {(provided) => (
-              <Table.Body ref={provided.innerRef} {...provided.droppableProps}>
-                {items.map((item, index) => {
-                  return (
-                    <Draggable
-                      key={item.id}
-                      draggableId={item.id.toString()}
-                      index={index}
-                    >
-                      {navRow({ item })}
-                    </Draggable>
-                  );
-                })}
-                {provided.placeholder}
-              </Table.Body>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </Table>
+      <DraggableTable data={hData} columns={columns} setData={hSetData} />
     </div>
   );
 };

@@ -12,13 +12,15 @@ const navRow = ({ item }: { item: NewNavItemResponse["data"][number] }) => {
       className="[&_td:last-child]:w-[1%] [&_td:last-child]:whitespace-nowrap h-[50px]"
     >
       <Table.Cell>
-        <IconButton variant="transparent">
-          <DotsSix />
-        </IconButton>
+        <DotsSix />
       </Table.Cell>
       <Table.Cell>{item.title}</Table.Cell>
       <Table.Cell>{item.content.slug}</Table.Cell>
-      <Table.Cell className="text-right" />
+      <Table.Cell>
+        <IconButton variant="transparent">
+          <EllipsisHorizontal />
+        </IconButton>
+      </Table.Cell>
     </Table.Row>
   );
 };
