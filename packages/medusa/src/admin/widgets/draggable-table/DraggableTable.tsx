@@ -5,6 +5,7 @@ import {
   getCoreRowModel,
   flexRender,
   ColumnDef,
+  Row,
 } from "@tanstack/react-table";
 import { Table } from "@medusajs/ui";
 import {
@@ -32,6 +33,7 @@ interface DraggableTableProps<T extends { id: string }> {
   setData: Dispatch<SetStateAction<T[]>>;
   isLoading: boolean;
   error: Error;
+  actionDrawer: (data: Row<T>) => React.ReactNode;
 }
 
 function DraggableTable<T extends { id: string }>({
@@ -40,6 +42,7 @@ function DraggableTable<T extends { id: string }>({
   columns,
   data,
   setData,
+  actionDrawer,
 }: DraggableTableProps<T>) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -55,7 +58,7 @@ function DraggableTable<T extends { id: string }>({
   const columnSizes = useMemo(() => {
     return columns.map((col, index) => ({
       id: col.id ?? String(index),
-      size: col.size ?? 150, // Default size if not specified
+      size: col.size ?? 150,
     }));
   }, [columns]);
 
@@ -64,7 +67,7 @@ function DraggableTable<T extends { id: string }>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     defaultColumn: {
-      size: 150, // Default column size
+      size: 150,
     },
   });
 
@@ -149,7 +152,11 @@ function DraggableTable<T extends { id: string }>({
               strategy={verticalListSortingStrategy}
             >
               {table.getRowModel().rows.map((row) => (
-                <DraggableRow key={row.original.id} row={row} />
+                <DraggableRow
+                  key={row.original.id}
+                  row={row}
+                  actionDrawer={actionDrawer}
+                />
               ))}
             </SortableContext>
           )}

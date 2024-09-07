@@ -1,38 +1,34 @@
 import { Heading } from "@medusajs/ui";
-import type { NewNavItemResponse } from "src/admin/routes/poverty/page";
 import DraggableTable from "../draggable-table/DraggableTable";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { useState } from "react";
+import { NewNavItemResponse } from "src/admin/routes/poverty/page";
 
-interface Person {
-  id: string;
-  name: string;
-  age: number;
-  city: string;
-}
-
-const columns: ColumnDef<Person>[] = [
+const columns: ColumnDef<NewNavItemResponse["data"][number]>[] = [
   { header: "Name", accessorKey: "name" },
-  { header: "Age", accessorKey: "age" },
-  { header: "City", accessorKey: "city" },
+  { header: "Slug", accessorKey: "slug" },
 ];
 
 const NavTable = ({
   title,
   data: defaultData,
   DrawerEl,
+  actionDrawer,
   isPending,
   isFetching,
   error,
 }: {
   title: string;
-  data: Person[];
+  data: NewNavItemResponse["data"];
   DrawerEl: React.ComponentType;
+  actionDrawer: (
+    data: Row<NewNavItemResponse["data"][number]>
+  ) => React.ReactNode;
   isPending: boolean;
   isFetching: boolean;
   error: Error;
 }) => {
-  const [hData, hSetData] = useState<Person[]>(defaultData);
+  const [data, setData] = useState<NewNavItemResponse["data"]>(defaultData);
 
   return (
     <div className="pb-4">
@@ -43,9 +39,10 @@ const NavTable = ({
       <DraggableTable
         isLoading={isFetching || isPending}
         error={error}
-        data={hData}
+        data={data}
+        actionDrawer={actionDrawer}
         columns={columns}
-        setData={hSetData}
+        setData={setData}
       />
     </div>
   );

@@ -1,12 +1,21 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChatBubbleLeftRight } from "@medusajs/icons";
-import { Container } from "@medusajs/ui";
+import { Container, DropdownMenu, IconButton } from "@medusajs/ui";
+import { EllipsisHorizontal, PencilSquare, Plus, Trash } from "@medusajs/icons";
 import NavTable from "../../widgets/poverty/navTable";
 import HeaderNavDrawer from "../../widgets/poverty/navAddDrawer";
 import PovertyLayout from "../../layouts/povertyLayout";
 import { useQuery } from "@tanstack/react-query";
 import ky from "ky";
 import DraggableTable from "../../widgets/draggable-table/DraggableTable";
+import { Row } from "@tanstack/react-table";
+
+// export interface Person {
+//   id: string;
+//   name: string;
+//   age: number;
+//   city: string;
+// }
 
 export type NewNavItemResponse = {
   data:
@@ -46,39 +55,44 @@ const HeaderNavPage = () => {
     queryFn: async () => {
       const res = await fetch("/admin/poverty/navigation/header");
       const json = (await res.json()) as NewNavItemResponse;
-      return [
-        { id: "1", name: "John Doe", age: 30, city: "New York" },
-        { id: "2", name: "Jane Smith", age: 25, city: "London" },
-        { id: "3", name: "Bob Johnson", age: 35, city: "Paris" },
-      ];
-      return json?.data ?? [];
+      return json?.data ?? ([] as NewNavItemResponse["data"]);
     },
-    initialData: () => [],
+    initialData: () => [] as NewNavItemResponse["data"],
   });
 
-  const columns = [
-    { header: "Name", accessorKey: "name" },
-    { header: "Age", accessorKey: "age" },
-    { header: "City", accessorKey: "city" },
-  ];
-
-  const data = [
-    { id: "1", name: "John Doe", age: 30, city: "New York" },
-    { id: "2", name: "Jane Smith", age: 25, city: "London" },
-    { id: "3", name: "Bob Johnson", age: 35, city: "Paris" },
-    { id: "4", name: "Kevin Bacon", age: 23, city: "Sydney" },
-  ];
+  const ActionDrawer = (data: Row<NewNavItemResponse["data"][number]>) => {
+    return (
+      <DropdownMenu>
+        <DropdownMenu.Trigger asChild>
+          <IconButton variant="transparent">
+            <EllipsisHorizontal />
+          </IconButton>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content>
+          <DropdownMenu.Item className="gap-x-2">
+            <PencilSquare className="text-ui-fg-subtle" />
+            Edit
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item className="gap-x-2">
+            <Trash className="text-ui-fg-subtle" />
+            Delete
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu>
+    );
+  };
 
   return (
     <Container className="p-0">
       <div className="w-full">
-        {/* <DraggableTable columns={columns} data={data} /> */}
         <NavTable
           title="Footer Links"
           isPending={hIsPending}
           isFetching={hIsFetching}
           error={hError}
-          data={data}
+          data={hData}
+          actionDrawer={ActionDrawer}
           DrawerEl={withProps(HeaderNavDrawer, {
             drawerTitle: "Add New Footer Link",
             drawerDescription:

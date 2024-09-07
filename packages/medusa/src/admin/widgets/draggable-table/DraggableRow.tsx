@@ -1,18 +1,20 @@
 import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Table, IconButton } from "@medusajs/ui";
+import { Table } from "@medusajs/ui";
 import { flexRender, Row } from "@tanstack/react-table";
-import { DotsSix, EllipsisHorizontal } from "@medusajs/icons";
+import { DotsSix } from "@medusajs/icons";
 
 interface DraggableRowProps<T> {
   row: Row<T>;
   isDragOverlay?: boolean;
+  actionDrawer?: (data: Row<T>) => React.ReactNode;
 }
 
 const DraggableRow = <T extends { id: string }>({
   row,
   isDragOverlay = false,
+  actionDrawer,
 }: DraggableRowProps<T>) => {
   const {
     attributes,
@@ -28,6 +30,13 @@ const DraggableRow = <T extends { id: string }>({
     transition,
     width: isDragOverlay ? "100%" : undefined,
     opacity: isDragging ? (isDragOverlay ? 1 : 0.5) : 1,
+  };
+
+  const renderActionDrawer = () => {
+    if (typeof actionDrawer === "function") {
+      return actionDrawer(row);
+    }
+    return null;
   };
 
   return (
@@ -60,11 +69,7 @@ const DraggableRow = <T extends { id: string }>({
           </div>
         </Table.Cell>
       ))}
-      <Table.Cell className="w-[88px] pl-4">
-        <IconButton variant="transparent">
-          <EllipsisHorizontal />
-        </IconButton>
-      </Table.Cell>
+      <Table.Cell className="w-[88px] pl-4">{renderActionDrawer()}</Table.Cell>
     </Table.Row>
   );
 };
