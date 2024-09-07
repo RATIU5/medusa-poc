@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@hello-pangea/dnd": "^16.6.0",
+    "@medusajs/admin-sdk": "^0.0.2-preview-20240907120637",
+    "@medusajs/admin-shared": "^0.0.2-snapshot-20230525210913",
     "@medusajs/api-key": "preview",
     "@medusajs/auth": "preview",
     "@medusajs/auth-emailpass": "preview",
@@ -49,7 +51,9 @@
     "@medusajs/user": "preview",
     "@medusajs/workflow-engine-inmemory": "preview",
     "express": "^4.17.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "ky": "^1.7.2",
+    "medusa-react": "^9.0.18"
   },
   "devDependencies": {
     "@medusajs/medusa-cli": "preview",

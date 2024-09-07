@@ -27,7 +27,7 @@ const HeaderNavDrawer = ({
   return (
     <Drawer>
       <Drawer.Trigger asChild>
-        <IconButton>
+        <IconButton variant="transparent">
           <PlusMini />
         </IconButton>
       </Drawer.Trigger>
