@@ -1,10 +1,10 @@
 import { Heading } from "@medusajs/ui";
 import DraggableTable from "../draggable-table/DraggableTable";
 import { ColumnDef, Row } from "@tanstack/react-table";
-import { useState } from "react";
-import { NewNavItemResponse } from "src/admin/routes/poverty/page";
+import { useEffect, useState } from "react";
+import { NavItemResponse, NavItemsFormatted } from "../../routes/poverty/page";
 
-const columns: ColumnDef<NewNavItemResponse["data"][number]>[] = [
+const columns: ColumnDef<NavItemsFormatted[number]>[] = [
   { header: "Name", accessorKey: "name" },
   { header: "Slug", accessorKey: "slug" },
 ];
@@ -19,16 +19,24 @@ const NavTable = ({
   error,
 }: {
   title: string;
-  data: NewNavItemResponse["data"];
+  data: NavItemResponse["data"];
   DrawerEl: React.ComponentType;
-  actionDrawer: (
-    data: Row<NewNavItemResponse["data"][number]>
-  ) => React.ReactNode;
+  actionDrawer: (data: Row<NavItemsFormatted[number]>) => React.ReactNode;
   isPending: boolean;
   isFetching: boolean;
   error: Error;
 }) => {
-  const [data, setData] = useState<NewNavItemResponse["data"]>(defaultData);
+  const [data, setData] = useState<NavItemsFormatted>([]);
+
+  useEffect(() => {
+    setData(
+      defaultData.map((d) => ({
+        id: d.id,
+        slug: d.content.slug,
+        name: d.content.name,
+      }))
+    );
+  }, [defaultData]);
 
   return (
     <div className="pb-4">

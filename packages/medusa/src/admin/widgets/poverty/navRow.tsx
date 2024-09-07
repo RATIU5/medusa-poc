@@ -1,9 +1,9 @@
 import type { DraggableProvided } from "@hello-pangea/dnd";
 import { DotsSix, EllipsisHorizontal } from "@medusajs/icons";
 import { Text, Button, IconButton, Drawer, Table } from "@medusajs/ui";
-import type { NewNavItemResponse } from "src/admin/routes/poverty/page";
+import type { NavItemResponse } from "src/admin/routes/poverty/page";
 
-const navRow = ({ item }: { item: NewNavItemResponse["data"][number] }) => {
+const navRow = ({ item }: { item: NavItemResponse["data"][number] }) => {
   return (provided: DraggableProvided) => (
     <Table.Row
       {...provided.draggableProps}

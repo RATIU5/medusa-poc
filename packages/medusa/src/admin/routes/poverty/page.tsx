@@ -17,7 +17,7 @@ import { Row } from "@tanstack/react-table";
 //   city: string;
 // }
 
-export type NewNavItemResponse = {
+export type NavItemResponse = {
   data:
     | {
         id: string;
@@ -37,6 +37,10 @@ export type NewNavItemResponse = {
     | null;
 };
 
+export type NavItemsFormatted = Array<
+  NavItemResponse["data"][number]["content"] & { id: string }
+>;
+
 function withProps<P = unknown>(
   Component: React.ComponentType<P>,
   props: P
@@ -54,13 +58,13 @@ const HeaderNavPage = () => {
     queryKey: ["repoData"],
     queryFn: async () => {
       const res = await fetch("/admin/poverty/navigation/header");
-      const json = (await res.json()) as NewNavItemResponse;
-      return json?.data ?? ([] as NewNavItemResponse["data"]);
+      const json = (await res.json()) as NavItemResponse;
+      return json?.data ?? ([] as NavItemResponse["data"]);
     },
-    initialData: () => [] as NewNavItemResponse["data"],
+    initialData: () => [] as NavItemResponse["data"],
   });
 
-  const ActionDrawer = (data: Row<NewNavItemResponse["data"][number]>) => {
+  const ActionDrawer = (data: Row<NavItemsFormatted[number]>) => {
     return (
       <DropdownMenu>
         <DropdownMenu.Trigger asChild>
