@@ -191,3 +191,22 @@ func validateJSONObject(data json.RawMessage, fieldName string) error {
 
 	return nil
 }
+
+func uuidPtrToStringPtr(u *uuid.UUID) *string {
+	if u == nil {
+		return nil
+	}
+	s := u.String()
+	return &s
+}
+
+func stringPtrToUUIDPtr(s *string) (*uuid.UUID, error) {
+	if s == nil {
+		return nil, nil
+	}
+	u, err := uuid.Parse(*s)
+	if err != nil {
+		return nil, err
+	}
+	return &u, nil
+}

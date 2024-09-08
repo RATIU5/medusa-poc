@@ -190,13 +190,20 @@ func (i *ItemsHandler) createItem(ctx context.Context, item *Item) error {
 		}
 
 		query := `
-			INSERT INTO items (title, parent_id, content, metadata)
-			VALUES ($1, $2, $3, $4)
-			RETURNING id, created_at, updated_at`
+					INSERT INTO items (title, parent_id, content, metadata)
+					VALUES ($1, $2, $3, $4)
+					RETURNING id, created_at, updated_at`
+
+		var parentID interface{}
+		if item.ParentID != nil {
+			parentID = *item.ParentID
+		} else {
+			parentID = nil
+		}
 
 		err := tx.QueryRow(ctx, query,
 			item.Title,
-			item.ParentID,
+			parentID,
 			item.Content,
 			item.Metadata,
 		).Scan(&item.ID, &item.CreatedAt, &item.UpdatedAt)

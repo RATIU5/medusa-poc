@@ -95,3 +95,31 @@ func validateUpdateItemRequest(item *FullUpdateItem) error {
 	}
 	return nil
 }
+
+func (i *Item) MarshalJSON() ([]byte, error) {
+	type Alias Item
+	return json.Marshal(&struct {
+		*Alias
+		ParentID *string `json:"parent_id,omitempty"`
+	}{
+		Alias:    (*Alias)(i),
+		ParentID: uuidPtrToStringPtr(i.ParentID),
+	})
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for Item
+func (i *Item) UnmarshalJSON(data []byte) error {
+	type Alias Item
+	aux := &struct {
+		*Alias
+		ParentID *string `json:"parent_id,omitempty"`
+	}{
+		Alias: (*Alias)(i),
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	var err error
+	i.ParentID, err = stringPtrToUUIDPtr(aux.ParentID)
+	return err
+}
