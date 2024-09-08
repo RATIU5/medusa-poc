@@ -1,45 +1,18 @@
+import { useEffect, useState } from "react";
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChatBubbleLeftRight } from "@medusajs/icons";
 import { Container, DropdownMenu, IconButton } from "@medusajs/ui";
-import { EllipsisHorizontal, PencilSquare, Plus, Trash } from "@medusajs/icons";
+import { EllipsisHorizontal, PencilSquare, Trash } from "@medusajs/icons";
 import NavTable from "../../widgets/poverty/navTable";
 import HeaderNavDrawer from "../../widgets/poverty/navAddDrawer";
 import PovertyLayout from "../../layouts/povertyLayout";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import ky from "ky";
-import DraggableTable from "../../widgets/draggable-table/DraggableTable";
-import { Row } from "@tanstack/react-table";
-
-// export interface Person {
-//   id: string;
-//   name: string;
-//   age: number;
-//   city: string;
-// }
-
-export type NavItemResponse = {
-  data:
-    | {
-        id: string;
-        title: string;
-        metadata: {
-          position: number;
-          type: "header-link" | "footer-link";
-        };
-        content: {
-          name: string;
-          slug: string;
-        };
-        parent_id: string;
-        created_at: string;
-        updated_at: string;
-      }[]
-    | null;
-};
-
-export type NavItemsFormatted = Array<
-  NavItemResponse["data"][number]["content"] & { id: string }
->;
+import type { Row } from "@tanstack/react-table";
+import type {
+  FormattedPovertyNavigationItems,
+  GetResponsePovertyNavigation,
+} from "../../../utils/types";
 
 function withProps<P = unknown>(
   Component: React.ComponentType<P>,
@@ -52,19 +25,58 @@ const HeaderNavPage = () => {
   const {
     isPending: hIsPending,
     error: hError,
-    data: hData,
+    data: hFetchData,
     isFetching: hIsFetching,
   } = useQuery({
     queryKey: ["repoData"],
     queryFn: async () => {
       const res = await fetch("/admin/poverty/navigation/header");
-      const json = (await res.json()) as NavItemResponse;
-      return json?.data ?? ([] as NavItemResponse["data"]);
+      const json = (await res.json()) as GetResponsePovertyNavigation;
+      return json?.data ?? ([] as GetResponsePovertyNavigation["data"]);
     },
-    initialData: () => [] as NavItemResponse["data"],
+    initialData: () => [] as GetResponsePovertyNavigation["data"],
   });
+  const mutation = useMutation({
+    mutationFn: (newData: FormattedPovertyNavigationItems[number]) => {
+      return ky
+        .put("/admin/poverty/navigation/header", {
+          json: newData,
+        })
+        .json();
+    },
+    onSuccess: () => {},
+  });
+  const [hData, hSetData] = useState<FormattedPovertyNavigationItems>([]);
 
-  const ActionDrawer = (data: Row<NavItemsFormatted[number]>) => {
+  useEffect(() => {
+    hSetData(
+      hFetchData
+        .map((d) => ({
+          id: d.id,
+          slug: d.content.slug,
+          name: d.content.name,
+          position: d.metadata.position,
+        }))
+        .sort((a, b) => a.position - b.position)
+    );
+  }, [hFetchData]);
+
+  function updateItemPositions(
+    fn: (
+      data: FormattedPovertyNavigationItems
+    ) => FormattedPovertyNavigationItems
+  ) {
+    const newData = fn(hData);
+    const updatedData = newData.map((item, index) => {
+      return { ...item, position: index };
+    });
+    for (const item of updatedData) {
+      mutation.mutate(item);
+    }
+    hSetData(updatedData);
+  }
+
+  const ActionDrawer = (data: Row<FormattedPovertyNavigationItems[number]>) => {
     return (
       <DropdownMenu>
         <DropdownMenu.Trigger asChild>
@@ -96,11 +108,15 @@ const HeaderNavPage = () => {
           isFetching={hIsFetching}
           error={hError}
           data={hData}
+          setData={updateItemPositions}
           actionDrawer={ActionDrawer}
           DrawerEl={withProps(HeaderNavDrawer, {
-            drawerTitle: "Add New Footer Link",
+            setNewItem: (item: FormattedPovertyNavigationItems[number]) => {
+              hSetData((prev) => [...prev, item]);
+            },
+            drawerTitle: "Add New Header Link",
             drawerDescription:
-              "Add a new link to the footer navigation of the store.",
+              "Add a new link to the header navigation of the store.",
           })}
         />
       </div>

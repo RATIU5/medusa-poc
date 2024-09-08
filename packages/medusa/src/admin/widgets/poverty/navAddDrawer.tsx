@@ -1,16 +1,23 @@
 import { useState } from "react";
 import { Input, Text, Button, IconButton, Drawer, Label } from "@medusajs/ui";
 import { PlusMini } from "@medusajs/icons";
+import { toast } from "@medusajs/ui";
+import type {
+  FormattedPovertyNavigationItems,
+  PostResponsePovertyNavigation,
+} from "../../../utils/types";
 
 const HeaderNavDrawer = ({
   drawerTitle,
   drawerDescription,
+  setNewItem,
 }: {
   drawerTitle: string;
   drawerDescription: string;
+  setNewItem: (data: FormattedPovertyNavigationItems[number]) => void;
 }) => {
-  const [pageName, setPageName] = useState<string>();
-  const [pageSlug, setPageSlug] = useState<string>();
+  const [pageName, setPageName] = useState<string>("");
+  const [pageSlug, setPageSlug] = useState<string>("");
 
   function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     setPageName(e.target.value);
@@ -20,8 +27,51 @@ const HeaderNavDrawer = ({
     setPageSlug(e.target.value);
   }
 
-  function handleFormSubmit() {
-    // handleNewHeaderLinkSubmit();
+  async function handleFormSubmit() {
+    try {
+      const slug = pageSlug?.startsWith("/") ? pageSlug : `/${pageSlug}`;
+
+      const res = await fetch("/admin/poverty/navigation/header", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: pageName,
+          slug,
+          position: 0,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to add new link");
+      }
+
+      const json = (await res.json()) as
+        | PostResponsePovertyNavigation
+        | { data: string };
+
+      if (!json.data) {
+        throw new Error("Failed to add new link");
+      }
+
+      if (typeof json.data === "string") {
+        throw new Error("Failed to add new link");
+      }
+
+      const newItem = {
+        id: json.data.id,
+        name: json.data.content.name,
+        slug: json.data.content.slug,
+        position: json.data.metadata.position,
+      };
+
+      setNewItem(newItem);
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
   }
 
   return (

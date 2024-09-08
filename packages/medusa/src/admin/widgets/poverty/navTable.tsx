@@ -1,43 +1,39 @@
+import type { Dispatch, SetStateAction } from "react";
 import { Heading } from "@medusajs/ui";
 import DraggableTable from "../draggable-table/DraggableTable";
-import { ColumnDef, Row } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
-import { NavItemResponse, NavItemsFormatted } from "../../routes/poverty/page";
+import type { ColumnDef, Row } from "@tanstack/react-table";
+import type { FormattedPovertyNavigationItems } from "../../../utils/types";
 
-const columns: ColumnDef<NavItemsFormatted[number]>[] = [
+const columns: ColumnDef<FormattedPovertyNavigationItems[number]>[] = [
   { header: "Name", accessorKey: "name" },
   { header: "Slug", accessorKey: "slug" },
 ];
 
 const NavTable = ({
   title,
-  data: defaultData,
+  data,
   DrawerEl,
   actionDrawer,
   isPending,
   isFetching,
+  setData,
   error,
 }: {
   title: string;
-  data: NavItemResponse["data"];
+  data: FormattedPovertyNavigationItems;
   DrawerEl: React.ComponentType;
-  actionDrawer: (data: Row<NavItemsFormatted[number]>) => React.ReactNode;
+  actionDrawer: (
+    data: Row<FormattedPovertyNavigationItems[number]>
+  ) => React.ReactNode;
   isPending: boolean;
   isFetching: boolean;
+  setData: (
+    fn: (
+      data: FormattedPovertyNavigationItems
+    ) => FormattedPovertyNavigationItems
+  ) => void;
   error: Error;
 }) => {
-  const [data, setData] = useState<NavItemsFormatted>([]);
-
-  useEffect(() => {
-    setData(
-      defaultData.map((d) => ({
-        id: d.id,
-        slug: d.content.slug,
-        name: d.content.name,
-      }))
-    );
-  }, [defaultData]);
-
   return (
     <div className="pb-4">
       <div className="flex justify-between px-6 py-4">

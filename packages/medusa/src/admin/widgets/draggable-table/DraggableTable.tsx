@@ -1,18 +1,18 @@
-import React, { useState, useMemo } from "react";
+import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  ColumnDef,
-  Row,
+  type ColumnDef,
+  type Row,
 } from "@tanstack/react-table";
 import { Table } from "@medusajs/ui";
 import {
   DndContext,
-  DragEndEvent,
+  type DragEndEvent,
   DragOverlay,
-  DragStartEvent,
+  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -30,7 +30,7 @@ import DraggableRow from "./DraggableRow";
 interface DraggableTableProps<T extends { id: string }> {
   columns: ColumnDef<T>[];
   data: T[];
-  setData: Dispatch<SetStateAction<T[]>>;
+  setData: (fn: (data: T[]) => T[]) => void;
   isLoading: boolean;
   error: Error;
   actionDrawer: (data: Row<T>) => React.ReactNode;
@@ -54,13 +54,6 @@ function DraggableTable<T extends { id: string }>({
     }),
     useSensor(KeyboardSensor)
   );
-
-  const columnSizes = useMemo(() => {
-    return columns.map((col, index) => ({
-      id: col.id ?? String(index),
-      size: col.size ?? 150,
-    }));
-  }, [columns]);
 
   const table = useReactTable({
     data,
@@ -110,7 +103,7 @@ function DraggableTable<T extends { id: string }>({
         <Table.Header>
           {table.getHeaderGroups().map((headerGroup) => (
             <Table.Row key={headerGroup.id}>
-              <Table.HeaderCell className="w-[88px]"></Table.HeaderCell>
+              <Table.HeaderCell className="w-[88px]" />
               {headerGroup.headers.map((header) => (
                 <Table.HeaderCell
                   key={header.id}
@@ -125,7 +118,7 @@ function DraggableTable<T extends { id: string }>({
                       )}
                 </Table.HeaderCell>
               ))}
-              <Table.HeaderCell className="w-[88px]"></Table.HeaderCell>
+              <Table.HeaderCell className="w-[88px]" />
             </Table.Row>
           ))}
         </Table.Header>
@@ -133,17 +126,17 @@ function DraggableTable<T extends { id: string }>({
           {isLoading ? (
             table.getHeaderGroups().map((headerGroup) => (
               <Table.Row key={headerGroup.id}>
-                <Table.Cell className="w-[88px]"></Table.Cell>
+                <Table.Cell className="w-[88px]" />
                 {headerGroup.headers.map((header) => (
                   <Table.Cell
                     key={header.id}
                     className="!w-auto overflow-hidden"
                     style={{ width: header.getSize() }}
                   >
-                    <div className="w-full p-2 bg-white/5 rounded-full"></div>
+                    <div className="w-full p-2 bg-white/5 rounded-full" />
                   </Table.Cell>
                 ))}
-                <Table.HeaderCell className="w-[88px]"></Table.HeaderCell>
+                <Table.HeaderCell className="w-[88px]" />
               </Table.Row>
             ))
           ) : (
@@ -167,11 +160,9 @@ function DraggableTable<T extends { id: string }>({
           <Table className="w-full table-fixed">
             <Table.Body>
               <DraggableRow
-                row={
-                  table
-                    .getRowModel()
-                    .rows.find((row) => row.original.id === activeId)!
-                }
+                row={table
+                  .getRowModel()
+                  .rows.find((row) => row.original.id === activeId)}
                 isDragOverlay
               />
             </Table.Body>

@@ -1,8 +1,7 @@
-import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Table } from "@medusajs/ui";
-import { flexRender, Row } from "@tanstack/react-table";
+import { flexRender, type Row } from "@tanstack/react-table";
 import { DotsSix } from "@medusajs/icons";
 
 interface DraggableRowProps<T> {
