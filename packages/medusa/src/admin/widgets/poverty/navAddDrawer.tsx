@@ -66,6 +66,7 @@ const HeaderNavDrawer = ({
         position: json.data.metadata.position,
       };
 
+      toast.success("Successfully added new link");
       setNewItem(newItem);
     } catch (error) {
       if (error instanceof Error) {

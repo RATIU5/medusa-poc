@@ -139,7 +139,7 @@ function DraggableTable<T extends { id: string }>({
                 <Table.HeaderCell className="w-[88px]" />
               </Table.Row>
             ))
-          ) : (
+          ) : data.length > 0 ? (
             <SortableContext
               items={data.map((item) => item.id)}
               strategy={verticalListSortingStrategy}
@@ -152,6 +152,12 @@ function DraggableTable<T extends { id: string }>({
                 />
               ))}
             </SortableContext>
+          ) : (
+            <tr className="">
+              <td className="w-full py-6 px-3 text-center" colSpan={4}>
+                No&nbsp;data
+              </td>
+            </tr>
           )}
         </Table.Body>
       </Table>

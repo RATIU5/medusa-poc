@@ -22,6 +22,10 @@ export type PostResponsePovertyNavigation = {
   data: GetResponsePovertyNavigation["data"][number];
 };
 
+export type PutResponsePovertyNavigation = {
+  data: GetResponsePovertyNavigation["data"][number];
+};
+
 export type FormattedPovertyNavigationItems = Array<
   GetResponsePovertyNavigation["data"][number]["content"] & {
     id: string;

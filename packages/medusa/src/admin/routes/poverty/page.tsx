@@ -7,6 +7,7 @@ import NavTable from "../../widgets/poverty/navTable";
 import HeaderNavDrawer from "../../widgets/poverty/navAddDrawer";
 import PovertyLayout from "../../layouts/povertyLayout";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { toast } from "@medusajs/ui";
 import ky from "ky";
 import type { Row } from "@tanstack/react-table";
 import type {
@@ -44,7 +45,12 @@ const HeaderNavPage = () => {
         })
         .json();
     },
-    onSuccess: () => {},
+    onSuccess: () => {
+      toast.success("Successfully updated navigation item positions");
+    },
+    onError: () => {
+      toast.error("Failed to update navigation item positions");
+    },
   });
   const [hData, hSetData] = useState<FormattedPovertyNavigationItems>([]);
 
@@ -68,7 +74,7 @@ const HeaderNavPage = () => {
   ) {
     const newData = fn(hData);
     const updatedData = newData.map((item, index) => {
-      return { ...item, position: index };
+      return { ...item, position: index + 1 };
     });
     for (const item of updatedData) {
       mutation.mutate(item);
@@ -77,6 +83,21 @@ const HeaderNavPage = () => {
   }
 
   const ActionDrawer = (data: Row<FormattedPovertyNavigationItems[number]>) => {
+    async function handleDelete() {
+      const newData = hData.filter((d) => d.id !== data.original.id);
+      updateItemPositions(() => newData);
+      const result = (await ky
+        .delete("/admin/poverty/navigation/header", {
+          json: { id: data.original.id },
+        })
+        .json()) as { data: string };
+      if (result.data !== "success") {
+        toast.error("Failed to delete item");
+      } else {
+        toast.success("Successfully deleted item");
+      }
+    }
+
     return (
       <DropdownMenu>
         <DropdownMenu.Trigger asChild>
@@ -90,7 +111,7 @@ const HeaderNavPage = () => {
             Edit
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
-          <DropdownMenu.Item className="gap-x-2">
+          <DropdownMenu.Item className="gap-x-2" onClick={handleDelete}>
             <Trash className="text-ui-fg-subtle" />
             Delete
           </DropdownMenu.Item>
@@ -103,7 +124,7 @@ const HeaderNavPage = () => {
     <Container className="p-0">
       <div className="w-full">
         <NavTable
-          title="Footer Links"
+          title="Header Links"
           isPending={hIsPending}
           isFetching={hIsFetching}
           error={hError}
