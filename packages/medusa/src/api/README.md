@@ -174,3 +174,5 @@ Response body type:
     null;
 }
 ```
+
+<!-- Bugs: Same name/slug merges together both footer and header links -->
