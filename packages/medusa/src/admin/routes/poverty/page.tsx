@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChatBubbleLeftRight } from "@medusajs/icons";
 import { Container, DropdownMenu, IconButton } from "@medusajs/ui";
-import { EllipsisHorizontal, PencilSquare, Trash } from "@medusajs/icons";
+import { EllipsisHorizontal, Trash, PencilSquare } from "@medusajs/icons";
 import NavTable from "../../widgets/poverty/navTable";
 import HeaderNavDrawer from "../../widgets/poverty/navAddDrawer";
 import PovertyLayout from "../../layouts/povertyLayout";
@@ -14,6 +14,7 @@ import type {
   FormattedPovertyNavigationItems,
   GetResponsePovertyNavigation,
 } from "../../../utils/types";
+import NavEditDrawer from "../../widgets/poverty/navEditDrawer";
 
 function withProps<P = unknown>(
   Component: React.ComponentType<P>,
@@ -45,9 +46,6 @@ const HeaderNavPage = () => {
         })
         .json();
     },
-    onSuccess: () => {
-      toast.success("Successfully updated navigation item positions");
-    },
     onError: () => {
       toast.error("Failed to update navigation item positions");
     },
@@ -67,7 +65,7 @@ const HeaderNavPage = () => {
     );
   }, [hFetchData]);
 
-  function updateItemPositions(
+  function updateItems(
     fn: (
       data: FormattedPovertyNavigationItems
     ) => FormattedPovertyNavigationItems
@@ -82,10 +80,12 @@ const HeaderNavPage = () => {
     hSetData(updatedData);
   }
 
-  const ActionDrawer = (data: Row<FormattedPovertyNavigationItems[number]>) => {
+  const ActionMenu = (data: Row<FormattedPovertyNavigationItems[number]>) => {
+    const triggerRef = useRef<HTMLButtonElement>(null);
+
     async function handleDelete() {
       const newData = hData.filter((d) => d.id !== data.original.id);
-      updateItemPositions(() => newData);
+      updateItems(() => newData);
       const result = (await ky
         .delete("/admin/poverty/navigation/header", {
           json: { id: data.original.id },
@@ -98,25 +98,42 @@ const HeaderNavPage = () => {
       }
     }
 
+    function openEditDrawer() {
+      triggerRef.current?.click();
+    }
+
     return (
-      <DropdownMenu>
-        <DropdownMenu.Trigger asChild>
-          <IconButton variant="transparent">
-            <EllipsisHorizontal />
-          </IconButton>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content>
-          <DropdownMenu.Item className="gap-x-2">
-            <PencilSquare className="text-ui-fg-subtle" />
-            Edit
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item className="gap-x-2" onClick={handleDelete}>
-            <Trash className="text-ui-fg-subtle" />
-            Delete
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu>
+      <>
+        <NavEditDrawer
+          triggerRef={triggerRef}
+          drawerTitle="Update Link"
+          drawerDescription="Update the link name or slug"
+          item={data.original}
+          updateExistingItem={(newItem) => {
+            updateItems((prev) =>
+              prev.map((item) => (item.id === newItem.id ? newItem : item))
+            );
+          }}
+        />
+        <DropdownMenu>
+          <DropdownMenu.Trigger asChild>
+            <IconButton variant="transparent">
+              <EllipsisHorizontal />
+            </IconButton>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            <DropdownMenu.Item className="gap-x-2" onClick={openEditDrawer}>
+              <PencilSquare className="text-ui-fg-subtle" />
+              Edit
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item className="gap-x-2" onClick={handleDelete}>
+              <Trash className="text-ui-fg-subtle" />
+              Delete
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu>
+      </>
     );
   };
 
@@ -129,8 +146,8 @@ const HeaderNavPage = () => {
           isFetching={hIsFetching}
           error={hError}
           data={hData}
-          setData={updateItemPositions}
-          actionDrawer={ActionDrawer}
+          setData={updateItems}
+          actionDrawer={ActionMenu}
           DrawerEl={withProps(HeaderNavDrawer, {
             setNewItem: (item: FormattedPovertyNavigationItems[number]) => {
               hSetData((prev) => [...prev, item]);
