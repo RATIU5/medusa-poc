@@ -13,6 +13,7 @@ func SetupRoutes(router fiber.Router, db *database.Database, logger *log.Logger)
 	items := v1.Group("/items")
 	items.Get("/", itemHandlers.GetAllItemsHandler)
 	items.Post("/", itemHandlers.CreateItemHandler)
+	items.Put("/", itemHandlers.UpdateItemsHandler)
 
 	item := items.Group(":id")
 	item.Get("/", itemHandlers.GetItemHandler)

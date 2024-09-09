@@ -206,3 +206,14 @@ func (i *ItemsHandler) GetChildrenHandler(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(children)
 }
+
+func (i *ItemsHandler) UpdateItemsHandler(c *fiber.Ctx) error {
+	var updateItems []FullUpdateItem
+	if err := c.BodyParser(&updateItems); err != nil {
+		return handleError(c, i.logger, ErrInvalidRequestBody)
+	}
+
+	fmt.Printf("updateItems: %v\n", updateItems)
+
+	return handleError(c, i.logger, ErrNotImplemented)
+}
