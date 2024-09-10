@@ -208,10 +208,15 @@ func (i *ItemsHandler) GetChildrenHandler(c *fiber.Ctx) error {
 }
 
 func (i *ItemsHandler) UpdateItemsHandler(c *fiber.Ctx) error {
+	rawBody := c.Body()
+	i.logger.Infof("Raw request body: %s", string(rawBody))
+
 	var updateItems []FullUpdateItems
 	if err := c.BodyParser(&updateItems); err != nil {
 		return handleError(c, i.logger, ErrInvalidRequestBody)
 	}
+
+	fmt.Printf("updateItems: %v\n", updateItems)
 
 	if len(updateItems) == 0 {
 		return handleError(c, i.logger, ErrInvalidRequestBody)

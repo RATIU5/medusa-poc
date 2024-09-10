@@ -106,45 +106,51 @@ export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
   const userId = req.requestId;
   const token = generateToken(userId);
 
-  const reqBody = req.body as {
-    name?: string;
-    slug?: string;
-    position?: number;
-    id?: string;
-  };
-
-  if (
-    reqBody.name === undefined ||
-    reqBody.slug === undefined ||
-    !reqBody.position === undefined ||
-    reqBody.id === undefined
-  ) {
+  if (Array.isArray(req.body) === false) {
     return res.status(400).json({
       data: "Missing required fields; check documentation",
     });
   }
 
-  if (reqBody.name === "" || reqBody.slug === "" || reqBody.id === "") {
-    return res.status(400).json({
-      data: "Empty values not allowed",
-    });
+  const reqBody = req.body as {
+    name?: string;
+    slug?: string;
+    position?: number;
+    id?: string;
+  }[];
+
+  for (const body of reqBody) {
+    if (
+      body.name === undefined ||
+      body.slug === undefined ||
+      body.position === undefined ||
+      body.id === undefined
+    ) {
+      return res.status(400).json({
+        data: "Missing required fields; check documentation",
+      });
+    }
+    if (body.name === "" || body.slug === "" || body.id === "") {
+      return res.status(400).json({
+        data: "Empty values not allowed",
+      });
+    }
+    if (body.position < 0 || !body.slug.startsWith("/")) {
+      return res.status(400).json({
+        data: "Invalid value not allowed",
+      });
+    }
   }
 
-  if (reqBody.position < 0 || !reqBody.slug.startsWith("/")) {
-    return res.status(400).json({
-      data: "Invalid value not allowed",
-    });
-  }
-
-  const result = await fetch(
-    `${process.env.VITE_POVERTY_URL}/api/v1/items/${reqBody.id}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
+  const result = await fetch(`${process.env.VITE_POVERTY_URL}/api/v1/items`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify([
+      ...reqBody.map((reqBody) => ({
+        id: reqBody.id,
         title: `${reqBody.name} - ${reqBody.slug}`,
         metadata: {
           position: reqBody.position,
@@ -154,9 +160,9 @@ export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
           name: reqBody.name,
           slug: reqBody.slug,
         },
-      }),
-    }
-  );
+      })),
+    ]),
+  });
 
   if (!result.ok) {
     console.error(result.status, result.statusText, await result.text());
