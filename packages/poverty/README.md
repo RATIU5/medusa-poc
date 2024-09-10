@@ -14,6 +14,7 @@ Poverty is a simple CMS for small websites. It is designed to be easy to use. It
 | ---------------------- | -------------------------- | --------------------------- |
 | [GET](#get-all)        | /api/v1/items              | Get all items               |
 | [POST](#create)        | /api/v1/items              | Create a new item           |
+| [PUT](#put-items)      | /api/v1/items              | Update an array of items    |
 | [GET](#get-item)       | /api/v1/items/:id          | Get an item by ID           |
 | [PATCH](#patch-item)   | /api/v1/items/:id          | Partially update an item    |
 | [PUT](#put-item)       | /api/v1/items/:id          | Fully update an item        |
@@ -129,6 +130,87 @@ Array<{
   created_at: string;
   updated_at: string;
 }
+```
+
+</details>
+
+<details>
+  <summary>400 Bad Request</summary>
+
+```ts
+{
+  error: string;
+}
+```
+
+</details>
+
+<details>
+  <summary>401 Unauthorized</summary>
+
+```ts
+{
+  error: string;
+}
+```
+
+</details>
+
+<details>
+  <summary>500 Internal Server Error</summary>
+
+```ts
+{
+  error: string;
+}
+```
+
+</details>
+
+### Put Items
+
+#### Request
+
+<details>
+  <summary>Headers</summary>
+
+| Key             | Value              |
+| --------------- | ------------------ |
+| `Content-Type`  | `application/json` |
+| `Authorization` | `Bearer {token}`   |
+
+</details>
+
+<details>
+  <summary>Body</summary>
+
+```ts
+Array<{
+  id: string;
+  title: string;
+  metadata: unknown;
+  content: unknown;
+  parent_id: string;
+}>;
+```
+
+</details>
+
+#### Responses
+
+<details>
+  <summary>200 OK</summary>
+
+```ts
+Array<{
+  id: string;
+  title: string;
+  metadata: unknown;
+  content: unknown;
+  parent_id: string;
+  created_at: string;
+  updated_at: string;
+}>;
 ```
 
 </details>

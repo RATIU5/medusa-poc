@@ -95,7 +95,7 @@ func jsonRawMessageEqual(a, b json.RawMessage) bool {
 	return bytes.Equal(a, b)
 }
 
-func mapEqual(a, b map[string]interface{}) bool {
+func mapEqual(a, b json.RawMessage) bool {
 	return bytes.Equal(mustMarshal(a), mustMarshal(b))
 }
 

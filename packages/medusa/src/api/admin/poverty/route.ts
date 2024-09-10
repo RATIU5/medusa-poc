@@ -23,7 +23,7 @@ function generateToken(userId: string) {
     userId,
   };
   const options = {
-    expiresIn: "96h",
+    expiresIn: "30d",
   };
   return jwt.sign(payload, process.env.JWT_SECRET, options);
 }

@@ -39,10 +39,10 @@ func (item *Item) validateMetadata() error {
 }
 
 type PartialUpdateItem struct {
-	Title    string                 `json:"title"`
-	Content  json.RawMessage        `json:"content"`
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
-	ParentID *uuid.UUID             `json:"parent_id,omitempty"`
+	Title    string          `json:"title"`
+	Content  json.RawMessage `json:"content"`
+	Metadata json.RawMessage `json:"metadata,omitempty"`
+	ParentID *uuid.UUID      `json:"parent_id,omitempty"`
 }
 
 func parseUpdateItemRequest(c *fiber.Ctx) (*PartialUpdateItem, error) {
@@ -58,7 +58,7 @@ func parseUpdateItemRequest(c *fiber.Ctx) (*PartialUpdateItem, error) {
 	if content, ok := requestBody["content"].(json.RawMessage); ok {
 		newItem.Content = content
 	}
-	if metadata, ok := requestBody["metadata"].(map[string]interface{}); ok {
+	if metadata, ok := requestBody["metadata"].(json.RawMessage); ok {
 		newItem.Metadata = metadata
 	}
 	if parentID, ok := requestBody["parent_id"]; ok {
@@ -80,13 +80,26 @@ func parseUpdateItemRequest(c *fiber.Ctx) (*PartialUpdateItem, error) {
 }
 
 type FullUpdateItem struct {
-	Title    string                 `json:"title"`
-	ParentID *uuid.UUID             `json:"parent_id"`
-	Content  json.RawMessage        `json:"content"`
-	Metadata map[string]interface{} `json:"metadata"`
+	Title    string          `json:"title"`
+	ParentID *uuid.UUID      `json:"parent_id"`
+	Content  json.RawMessage `json:"content"`
+	Metadata json.RawMessage `json:"metadata"`
 }
 
 func validateUpdateItemRequest(item *FullUpdateItem) error {
+	if item.Title == "" {
+		return errors.New("title is required")
+	}
+	if len(item.Content) == 0 {
+		return errors.New("content is required")
+	}
+	return nil
+}
+
+func validateUpdateItemsRequest(item *FullUpdateItems) error {
+	if item.Id == "" {
+		return errors.New("id is required")
+	}
 	if item.Title == "" {
 		return errors.New("title is required")
 	}
@@ -122,4 +135,12 @@ func (i *Item) UnmarshalJSON(data []byte) error {
 	var err error
 	i.ParentID, err = stringPtrToUUIDPtr(aux.ParentID)
 	return err
+}
+
+type FullUpdateItems struct {
+	Id       string          `json:"id"`
+	Title    string          `json:"title"`
+	Content  json.RawMessage `json:"content"`
+	Metadata json.RawMessage `json:"metadata,omitempty"`
+	ParentID *uuid.UUID      `json:"parent_id,omitempty"`
 }

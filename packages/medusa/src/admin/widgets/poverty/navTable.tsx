@@ -1,4 +1,3 @@
-import type { Dispatch, SetStateAction } from "react";
 import { Heading } from "@medusajs/ui";
 import DraggableTable from "../draggable-table/DraggableTable";
 import type { ColumnDef, Row } from "@tanstack/react-table";

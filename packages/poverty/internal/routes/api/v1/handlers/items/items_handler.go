@@ -208,12 +208,25 @@ func (i *ItemsHandler) GetChildrenHandler(c *fiber.Ctx) error {
 }
 
 func (i *ItemsHandler) UpdateItemsHandler(c *fiber.Ctx) error {
-	var updateItems []FullUpdateItem
+	var updateItems []FullUpdateItems
 	if err := c.BodyParser(&updateItems); err != nil {
 		return handleError(c, i.logger, ErrInvalidRequestBody)
 	}
 
-	fmt.Printf("updateItems: %v\n", updateItems)
+	if len(updateItems) == 0 {
+		return handleError(c, i.logger, ErrInvalidRequestBody)
+	}
 
-	return handleError(c, i.logger, ErrNotImplemented)
+	for _, item := range updateItems {
+		if err := validateUpdateItemsRequest(&item); err != nil {
+			return handleError(c, i.logger, err)
+		}
+	}
+
+	updatedItems, err := i.updateFullItems(c.Context(), updateItems)
+	if err != nil {
+		return handleError(c, i.logger, err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(updatedItems)
 }

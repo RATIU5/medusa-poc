@@ -359,3 +359,65 @@ func (i *ItemsHandler) getChildren(ctx context.Context, id uuid.UUID, filters []
 
 	return children, nil
 }
+
+func (i *ItemsHandler) updateFullItems(ctx context.Context, updateItems []FullUpdateItems) (*[]Item, error) {
+	updatedItems := make([]Item, len(updateItems))
+
+	err := i.db.ExecuteTransaction(ctx, func(tx pgx.Tx) error {
+		for i, updateItem := range updateItems {
+			itemUUID := updateItem.Id
+
+			_, err := getExistingItem(ctx, tx, itemUUID)
+			if err != nil {
+				return err
+			}
+
+			// Convert the string itemUUID to a uuid.UUID
+			newItemUUID, err := uuid.Parse(itemUUID)
+
+			if updateItem.ParentID != nil {
+				if err := validateParentID(ctx, tx, newItemUUID, updateItem.ParentID); err != nil {
+					return err
+				}
+			}
+
+			query := `
+			UPDATE items
+			SET title = $1, parent_id = $2, content = $3, metadata = $4, updated_at = NOW()
+			WHERE id = $5
+			RETURNING id, title, parent_id, content, metadata, created_at, updated_at
+		`
+
+			err = tx.QueryRow(ctx, query,
+				updateItem.Title,
+				updateItem.ParentID,
+				updateItem.Content,
+				updateItem.Metadata,
+				itemUUID,
+			).Scan(
+				&updatedItems[i].ID,
+				&updatedItems[i].Title,
+				&updatedItems[i].ParentID,
+				&updatedItems[i].Content,
+				&updatedItems[i].Metadata,
+				&updatedItems[i].CreatedAt,
+				&updatedItems[i].UpdatedAt,
+			)
+
+			if err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					return ErrItemNotFound
+				}
+				return fmt.Errorf("error updating item: %w", err)
+			}
+
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &updatedItems, nil
+}
