@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Input, Text, Button, IconButton, Drawer, Label } from "@medusajs/ui";
-import { PencilSquare } from "@medusajs/icons";
 import { toast } from "@medusajs/ui";
 import type {
   FormattedPovertyNavigationItems,
@@ -33,19 +32,23 @@ const NavEditDrawer = ({
 
   async function handleFormSubmit() {
     try {
-      const slug = pageSlug?.startsWith("/") ? pageSlug : `/${pageSlug}`;
+      const slug = (pageSlug?.startsWith("/") ? pageSlug : `/${pageSlug}`)
+        .replace(" ", "-")
+        .toLowerCase();
 
       const res = await fetch("/admin/poverty/navigation/header", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id: item.id,
-          name: pageName,
-          slug,
-          position: 0,
-        }),
+        body: JSON.stringify([
+          {
+            id: item.id,
+            name: pageName,
+            slug,
+            position: 0,
+          },
+        ]),
       });
 
       if (!res.ok) {
@@ -64,11 +67,15 @@ const NavEditDrawer = ({
         throw new Error("Failed to update link");
       }
 
+      if (json.data.length === 0) {
+        throw new Error("Failed to update link");
+      }
+
       const newItem = {
-        id: json.data.id,
-        name: json.data.content.name,
-        slug: json.data.content.slug,
-        position: json.data.metadata.position,
+        id: json.data[0].id,
+        name: json.data[0].content.name,
+        slug: json.data[0].content.slug,
+        position: json.data[0].metadata.position,
       };
 
       toast.success("Successfully updated link");

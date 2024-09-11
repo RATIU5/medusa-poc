@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { defineRouteConfig } from "@medusajs/admin-sdk";
-import { ChatBubbleLeftRight } from "@medusajs/icons";
 import { Container, DropdownMenu, IconButton } from "@medusajs/ui";
 import { EllipsisHorizontal, Trash, PencilSquare } from "@medusajs/icons";
 import NavTable from "../../../widgets/poverty/navTable";
@@ -117,7 +115,6 @@ const HeaderNavPage = () => {
     const updatedData = newData.map((item, index) => {
       return { ...item, position: index + 1 };
     });
-    console.log(updatedData);
     hMutation.mutate(updatedData, {
       onSuccess: () => {
         toast.success("Updated navigation items");

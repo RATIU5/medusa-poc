@@ -107,6 +107,7 @@ export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
   const token = generateToken(userId);
 
   if (Array.isArray(req.body) === false) {
+    console.error("Body is not a JSON array");
     return res.status(400).json({
       data: "Missing required fields; check documentation",
     });
@@ -126,11 +127,13 @@ export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
       body.position === undefined ||
       body.id === undefined
     ) {
+      console.error("name, slug, position, or id is missing");
       return res.status(400).json({
         data: "Missing required fields; check documentation",
       });
     }
     if (body.name === "" || body.slug === "" || body.id === "") {
+      console.log("name, slug, or id is empty");
       return res.status(400).json({
         data: "Empty values not allowed",
       });

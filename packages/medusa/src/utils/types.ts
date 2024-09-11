@@ -19,7 +19,7 @@ export type GetResponsePovertyNavigation = {
 };
 
 export type PostResponsePovertyNavigation = {
-  data: GetResponsePovertyNavigation["data"][number];
+  data: GetResponsePovertyNavigation["data"];
 };
 
 export type PutResponsePovertyNavigation = {
