@@ -100,11 +100,33 @@ const AddMediaDrawer = () => {
 
   const handleFormSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
+
+    const validExtensions = [
+      "jpeg",
+      "jpg",
+      "png",
+      "gif",
+      "webp",
+      "heic",
+      "svg",
+    ];
     for (const media of toUploadMedia) {
       if (!media.alt) {
-        toast.error("Alt text is required for all images");
+        toast.error("Alt text is required for all media");
         return;
       }
+      const ext = media.url.split(".").pop();
+      if (!validExtensions.includes(ext)) {
+        toast.error(`Invalid file type: ${ext}`);
+        return;
+      }
+
+      fetch("/admin/poverty/media", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
     }
   };
 

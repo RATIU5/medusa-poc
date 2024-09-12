@@ -1,5 +1,5 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/medusa";
-import * as jwt from "jsonwebtoken";
+import { generateToken } from "../../../../../utils/token";
 import type {
   PostResponsePovertyNavigation,
   PutResponsePovertyNavigation,
@@ -230,13 +230,3 @@ export const DELETE = async (req: MedusaRequest, res: MedusaResponse) => {
 
   return res.status(200).json({ data: "success" });
 };
-
-function generateToken(userId: string) {
-  const payload = {
-    userId,
-  };
-  const options = {
-    expiresIn: "96h",
-  };
-  return jwt.sign(payload, process.env.JWT_SECRET, options);
-}
