@@ -48,7 +48,7 @@ const FooterNavDrawer = ({
       }
 
       const json = (await res.json()) as
-        | PostResponsePovertyNavigation
+        | { data: PostResponsePovertyNavigation["data"][number] }
         | { data: string };
 
       if (!json.data) {

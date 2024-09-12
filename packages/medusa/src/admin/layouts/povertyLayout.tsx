@@ -1,6 +1,6 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { Container, Button } from '@medusajs/ui';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { Container, Button } from "@medusajs/ui";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +14,9 @@ const PovertyLayout = ({ children }) => {
         <Link to="/poverty/hero">
           <Button variant="transparent">Home Hero</Button>
         </Link>
-        <Button variant="transparent">Else</Button>
+        <Link to="/poverty/media">
+          <Button variant="transparent">Media</Button>
+        </Link>
       </Container>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </>
