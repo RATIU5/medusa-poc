@@ -11,10 +11,7 @@ const SelectMediaCard = ({
   url: string;
   alt?: string;
   handleDeleteItem: (url: string) => () => void;
-  handleTextChange: (
-    url: string,
-    e: ChangeEvent<HTMLTextAreaElement>
-  ) => (fn: ChangeEvent<HTMLTextAreaElement>) => void;
+  handleTextChange: (url: string, e: ChangeEvent<HTMLTextAreaElement>) => void;
 }) => {
   return (
     <div className="flex justify-between w-full">

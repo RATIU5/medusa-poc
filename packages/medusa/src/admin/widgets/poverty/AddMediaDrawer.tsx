@@ -20,6 +20,7 @@ import { ArrowUpTray } from "@medusajs/icons";
 import SelectMediaCard from "./media/SelectMediaCard";
 
 type MediaStruct = {
+  file: File;
   url: string;
   alt: string;
 };
@@ -44,7 +45,7 @@ const AddMediaDrawer = () => {
     const mediaArray: MediaStruct[] = [];
     for (const file of files) {
       if (file.type.startsWith("image/")) {
-        mediaArray.push({ url: URL.createObjectURL(file), alt: "" });
+        mediaArray.push({ file, url: URL.createObjectURL(file), alt: "" });
       }
     }
     setToUploadMedia((prev) => [...prev, ...mediaArray]);
@@ -86,16 +87,14 @@ const AddMediaDrawer = () => {
     url: string,
     e: ChangeEvent<HTMLTextAreaElement>
   ) => {
-    return () => {
-      setToUploadMedia((prev) =>
-        prev.map((m) => {
-          if (m.url === url) {
-            return { ...m, alt: e.target.value };
-          }
-          return m;
-        })
-      );
-    };
+    setToUploadMedia((prev) =>
+      prev.map((m) => {
+        if (m.url === url) {
+          return { ...m, alt: e.target.value };
+        }
+        return m;
+      })
+    );
   };
 
   const handleFormSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -110,24 +109,25 @@ const AddMediaDrawer = () => {
       "heic",
       "svg",
     ];
+    const formData = new FormData();
     for (const media of toUploadMedia) {
       if (!media.alt) {
         toast.error("Alt text is required for all media");
         return;
       }
-      const ext = media.url.split(".").pop();
+      const ext = media.file.name.split(".").pop();
       if (!validExtensions.includes(ext)) {
         toast.error(`Invalid file type: ${ext}`);
         return;
       }
-
-      fetch("/admin/poverty/media", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
     }
+    for (const file of uploadRef.current.files) {
+      formData.append("file", file);
+    }
+    fetch("/admin/poverty/media", {
+      method: "POST",
+      body: formData,
+    });
   };
 
   return (

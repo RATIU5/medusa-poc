@@ -1,75 +1,115 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/medusa";
-import { generateToken } from "../../../../utils/token";
-import type { PostResponsePovertyNavigation } from "../../../../utils/types";
 
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
-  const userId = req.requestId;
-  const token = generateToken(userId);
+  const boundary = getBoundary(req.headers["content-type"]);
 
-  const reqBody = req.body as {
-    name?: string;
-    slug?: string;
-    position?: number;
-  };
+  const uploadFileUrl = new URL(
+    "/povertycms/test.jpg",
+    "https://storage.bunnycdn.com"
+  );
 
-  if (
-    reqBody.name === undefined ||
-    reqBody.slug === undefined ||
-    reqBody.position === undefined
-  ) {
-    return res.status(400).json({
-      data: "Missing required fields; check documentation",
-    });
+  if (!boundary) {
+    return res.status(400).json({ error: "Invalid content type" });
   }
 
-  if (reqBody.name === "" || reqBody.slug === "") {
-    return res.status(400).json({
-      data: "Empty values not allowed",
-    });
+  console.log("Boundary:", boundary);
+  console.log("Body length:", (req.body as Buffer).length);
+  const parts = parseMultipartFormData(req.body as Buffer, boundary);
+  console.log("Number of parts:", parts.length);
+
+  for (const part of parts) {
+    if (part.data.length > 0) {
+      try {
+        console.log(
+          `Uploading file: ${part.filename}, Content-Type: ${part.contentType}, Data length: ${part.data.length}`
+        );
+        const response = await fetch(uploadFileUrl, {
+          method: "PUT",
+          headers: {
+            AccessKey: "22a690ff-2931-40d1-bdeff64f189a-c626-46d7",
+            "Content-Type": "application/octet-stream",
+          },
+          body: part.data,
+        });
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
+
+        console.log(`File ${part.filename} uploaded successfully`);
+      } catch (error) {
+        console.log("Error uploading file", error);
+        return res.status(500).json({ error: "Error uploading file" });
+      }
+    }
   }
-
-  if (reqBody.position < 0 || !reqBody.slug.startsWith("/")) {
-    return res.status(400).json({
-      data: "Invalid value not allowed",
-    });
-  }
-
-  const newBody = {
-    title: `${reqBody.name} - ${reqBody.slug}`,
-    metadata: {
-      position: reqBody.position,
-      type: "footer-link",
-    },
-    content: {
-      name: reqBody.name,
-      slug: reqBody.slug,
-    },
-  };
-
-  const result = await fetch(`${process.env.VITE_POVERTY_URL}/api/v1/items`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(newBody),
-  });
-
-  if (!result.ok) {
-    console.error(result.status, result.statusText, await result.text());
-    return res.status(200).json({
-      data: "Failed to add new link",
-    });
-  }
-
-  if (result.status !== 201) {
-    console.error(result.status, result.statusText, await result.text());
-    return res.status(200).json({
-      data: "Failed to add new link",
-    });
-  }
-
-  const data = (await result.json()) as PostResponsePovertyNavigation;
-
-  return res.status(200).json({ data });
+  res.status(200).json({ message: "Files processed" });
 };
+
+function getBoundary(contentType: string): string | null {
+  console.log("Parsing Content-Type:", contentType);
+  const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
+  console.log("Boundary match result:", boundaryMatch);
+  return boundaryMatch ? boundaryMatch[1] || boundaryMatch[2] : null;
+}
+
+function parseMultipartFormData(buffer: Buffer, boundary: string) {
+  const parts: Array<{
+    filename?: string;
+    contentType?: string;
+    data: Buffer;
+  }> = [];
+  const boundaryBuffer = Buffer.from(`--${boundary}`);
+  let start = buffer.indexOf(boundaryBuffer);
+
+  console.log("Start position:", start);
+
+  while (start !== -1 && start < buffer.length) {
+    const end = buffer.indexOf(boundaryBuffer, start + boundaryBuffer.length);
+    console.log("End position:", end);
+
+    if (end === -1) break;
+
+    const part = buffer.slice(start + boundaryBuffer.length, end);
+    const headerEnd = part.indexOf("\r\n\r\n");
+
+    if (headerEnd === -1) {
+      console.log("Invalid part structure, skipping...");
+      start = end;
+      continue;
+    }
+
+    const headers = part.slice(0, headerEnd).toString();
+    const data = part.slice(headerEnd + 4);
+
+    console.log("Headers:", headers);
+
+    const contentDispositionMatch = headers.match(
+      /Content-Disposition:.*?(?:filename="?(.+?)"?(?:;|$))/i
+    );
+    const contentTypeMatch = headers.match(/Content-Type:\s*([^\r\n]+)/i);
+
+    const filename = contentDispositionMatch
+      ? contentDispositionMatch[1]
+      : undefined;
+    const contentType = contentTypeMatch ? contentTypeMatch[1] : undefined;
+
+    console.log("Extracted filename:", filename);
+    console.log("Extracted content type:", contentType);
+
+    parts.push({
+      filename: filename,
+      contentType: contentType,
+      data: data,
+    });
+
+    console.log("Part added:", {
+      filename: filename,
+      contentType: contentType,
+      dataLength: data.length,
+    });
+
+    start = end;
+  }
+
+  return parts;
+}
