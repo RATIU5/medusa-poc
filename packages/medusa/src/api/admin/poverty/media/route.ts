@@ -45,10 +45,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   res.status(200).json({ message: "Files processed" });
 };
 
-function getBoundary(contentType: string): string | null {
-  console.log("Parsing Content-Type:", contentType);
-  const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
-  console.log("Boundary match result:", boundaryMatch);
+function getBoundary(contentType: string | undefined): string | null {
+  const boundaryMatch = contentType?.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
   return boundaryMatch ? boundaryMatch[1] || boundaryMatch[2] : null;
 }
 
@@ -61,19 +59,14 @@ function parseMultipartFormData(buffer: Buffer, boundary: string) {
   const boundaryBuffer = Buffer.from(`--${boundary}`);
   let start = buffer.indexOf(boundaryBuffer);
 
-  console.log("Start position:", start);
-
   while (start !== -1 && start < buffer.length) {
     const end = buffer.indexOf(boundaryBuffer, start + boundaryBuffer.length);
-    console.log("End position:", end);
-
     if (end === -1) break;
 
     const part = buffer.slice(start + boundaryBuffer.length, end);
     const headerEnd = part.indexOf("\r\n\r\n");
 
     if (headerEnd === -1) {
-      console.log("Invalid part structure, skipping...");
       start = end;
       continue;
     }
@@ -81,31 +74,17 @@ function parseMultipartFormData(buffer: Buffer, boundary: string) {
     const headers = part.slice(0, headerEnd).toString();
     const data = part.slice(headerEnd + 4);
 
-    console.log("Headers:", headers);
-
     const contentDispositionMatch = headers.match(
       /Content-Disposition:.*?(?:filename="?(.+?)"?(?:;|$))/i
     );
     const contentTypeMatch = headers.match(/Content-Type:\s*([^\r\n]+)/i);
 
-    const filename = contentDispositionMatch
-      ? contentDispositionMatch[1]
-      : undefined;
-    const contentType = contentTypeMatch ? contentTypeMatch[1] : undefined;
-
-    console.log("Extracted filename:", filename);
-    console.log("Extracted content type:", contentType);
-
     parts.push({
-      filename: filename,
-      contentType: contentType,
+      filename: contentDispositionMatch
+        ? contentDispositionMatch[1]
+        : undefined,
+      contentType: contentTypeMatch ? contentTypeMatch[1] : undefined,
       data: data,
-    });
-
-    console.log("Part added:", {
-      filename: filename,
-      contentType: contentType,
-      dataLength: data.length,
     });
 
     start = end;
