@@ -18,6 +18,25 @@ export type GetResponsePovertyNavigation = {
     | null;
 };
 
+export type GetResponsePovertyMediaItem = {
+  data:
+    | {
+        id: string;
+        title: string;
+        metadata: {
+          type: "media";
+        };
+        content: {
+          alt: string;
+          src: string;
+        };
+        parent_id: string;
+        created_at: string;
+        updated_at: string;
+      }[]
+    | null;
+};
+
 export type GetResponseBunnyMediaAll = Array<{
   Guid: string;
   StorageZoneName: string;

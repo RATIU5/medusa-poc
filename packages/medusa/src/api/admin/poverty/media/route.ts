@@ -1,7 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/medusa";
 import { randomUUID } from "node:crypto";
 import { generateToken } from "../../../../utils/token";
-import { GetResponseBunnyMediaAll } from "src/utils/types";
+import type { GetResponseBunnyMediaAll } from "src/utils/types";
 
 type FileData = {
   alt: string;

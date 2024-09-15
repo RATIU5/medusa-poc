@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import PovertyLayout from "../../../layouts/povertyLayout";
 import AddMediaDrawer from "../../../widgets/poverty/AddMediaDrawer";
 import type { GetResponseMedia } from "../../../../utils/types";
-import MediaCard from "../../../widgets/poverty/media/MediaCard";
+import MediaGrid from "../../../widgets/poverty/media/MediaGrid";
 
 const MediaPage = () => {
   const { isPending, error, data, isFetching } = useQuery({
@@ -22,17 +22,11 @@ const MediaPage = () => {
         <Heading level="h1">Media</Heading>
         <AddMediaDrawer />
       </div>
-      <div>
-        {isPending || isFetching ? (
-          <div>Loading...</div>
-        ) : error ? (
-          <div>Error</div>
-        ) : (
-          data.map((item, i) => (
-            <MediaCard key={`${item.path} + ${i}`} url={item.path} />
-          ))
-        )}
-      </div>
+      <MediaGrid
+        isLoading={isPending || isFetching}
+        error={error}
+        data={data}
+      />
     </Container>
   );
 };

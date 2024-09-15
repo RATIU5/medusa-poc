@@ -1195,6 +1195,32 @@ export type Country = {
   deleted_at?: Maybe<Scalars['DateTime']['output']>;
 };
 
+export enum NotificationStatusEnum {
+  Pending = 'PENDING',
+  Success = 'SUCCESS',
+  Failure = 'FAILURE'
+}
+
+export type Notification = {
+  __typename?: 'Notification';
+  id: Scalars['ID']['output'];
+  to: Scalars['String']['output'];
+  channel: Scalars['String']['output'];
+  template: Scalars['String']['output'];
+  data?: Maybe<Scalars['JSON']['output']>;
+  trigger_type?: Maybe<Scalars['String']['output']>;
+  resource_id?: Maybe<Scalars['String']['output']>;
+  resource_type?: Maybe<Scalars['String']['output']>;
+  receiver_id?: Maybe<Scalars['String']['output']>;
+  original_notification_id?: Maybe<Scalars['String']['output']>;
+  idempotency_key?: Maybe<Scalars['String']['output']>;
+  external_id?: Maybe<Scalars['String']['output']>;
+  status: NotificationStatusEnum;
+  created_at: Scalars['DateTime']['output'];
+  updated_at: Scalars['DateTime']['output'];
+  deleted_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
 export enum GeoZoneType {
   Country = 'country',
   Province = 'province',
@@ -1372,32 +1398,6 @@ export type ShippingProfile = {
   type: Scalars['String']['output'];
   metadata?: Maybe<Scalars['JSON']['output']>;
   shipping_options: Array<ShippingOption>;
-  created_at: Scalars['DateTime']['output'];
-  updated_at: Scalars['DateTime']['output'];
-  deleted_at?: Maybe<Scalars['DateTime']['output']>;
-};
-
-export enum NotificationStatusEnum {
-  Pending = 'PENDING',
-  Success = 'SUCCESS',
-  Failure = 'FAILURE'
-}
-
-export type Notification = {
-  __typename?: 'Notification';
-  id: Scalars['ID']['output'];
-  to: Scalars['String']['output'];
-  channel: Scalars['String']['output'];
-  template: Scalars['String']['output'];
-  data?: Maybe<Scalars['JSON']['output']>;
-  trigger_type?: Maybe<Scalars['String']['output']>;
-  resource_id?: Maybe<Scalars['String']['output']>;
-  resource_type?: Maybe<Scalars['String']['output']>;
-  receiver_id?: Maybe<Scalars['String']['output']>;
-  original_notification_id?: Maybe<Scalars['String']['output']>;
-  idempotency_key?: Maybe<Scalars['String']['output']>;
-  external_id?: Maybe<Scalars['String']['output']>;
-  status: NotificationStatusEnum;
   created_at: Scalars['DateTime']['output'];
   updated_at: Scalars['DateTime']['output'];
   deleted_at?: Maybe<Scalars['DateTime']['output']>;
@@ -1591,6 +1591,8 @@ declare module '@medusajs/types' {
   interface RemoteQueryEntryPoints {
     file: any
     files: any
+    workflow_execution: any
+    workflow_executions: any
     stock_location_address: StockLocationAddress
     stock_location_addresses: StockLocationAddress
     stock_location: StockLocation
@@ -1622,16 +1624,6 @@ declare module '@medusajs/types' {
     product_collections: ProductCollection
     product_category: ProductCategory
     product_categories: ProductCategory
-    customer_address: any
-    customer_addresses: any
-    customer_group_customer: any
-    customer_group_customers: any
-    customer_group: any
-    customer_groups: any
-    customer: any
-    customers: any
-    workflow_execution: any
-    workflow_executions: any
     promotion: Promotion
     promotions: Promotion
     campaign: Campaign
@@ -1648,6 +1640,24 @@ declare module '@medusajs/types' {
     prices: any
     price_preference: any
     price_preferences: any
+    customer_address: any
+    customer_addresses: any
+    customer_group_customer: any
+    customer_group_customers: any
+    customer_group: any
+    customer_groups: any
+    customer: any
+    customers: any
+    api_key: any
+    api_keys: any
+    tax_rate: any
+    tax_rates: any
+    tax_region: any
+    tax_regions: any
+    tax_rate_rule: any
+    tax_rate_rules: any
+    tax_provider: any
+    tax_providers: any
     cart: any
     carts: any
     address: any
@@ -1664,28 +1674,14 @@ declare module '@medusajs/types' {
     shipping_method_adjustments: any
     shipping_method_tax_line: any
     shipping_method_tax_lines: any
-    api_key: any
-    api_keys: any
     store: any
     stores: any
     store_currency: any
     store_currencies: any
-    tax_rate: any
-    tax_rates: any
-    tax_region: any
-    tax_regions: any
-    tax_rate_rule: any
-    tax_rate_rules: any
-    tax_provider: any
-    tax_providers: any
     auth_identity: any
     auth_identities: any
     provider_identity: any
     provider_identities: any
-    user: any
-    users: any
-    invite: any
-    invites: any
     order: Order
     orders: Order
     order_address: OrderAddress
@@ -1706,6 +1702,10 @@ declare module '@medusajs/types' {
     returns: Return
     return_reason: any
     return_reasons: any
+    user: any
+    users: any
+    invite: any
+    invites: any
     payment: Payment
     payments: Payment
     payment_collection: PaymentCollection
@@ -1720,6 +1720,8 @@ declare module '@medusajs/types' {
     regions: Region
     country: Country
     countries: Country
+    notification: Notification
+    notifications: Notification
     fulfillment_address: any
     fulfillment_addresses: any
     fulfillment_item: FulfillmentItem
@@ -1744,8 +1746,6 @@ declare module '@medusajs/types' {
     shipping_options: ShippingOption
     shipping_profile: ShippingProfile
     shipping_profiles: ShippingProfile
-    notification: Notification
-    notifications: Notification
     currency: Currency
     currencies: Currency
     cart_payment_collection: LinkCartPaymentCollection
