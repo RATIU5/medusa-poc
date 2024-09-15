@@ -1,4 +1,3 @@
-import ImageList from "../../../widgets/poverty/ImageList";
 import PovertyLayout from "../../../layouts/povertyLayout";
 import {
   Container,
@@ -46,7 +45,7 @@ const HomePage = () => {
               <FocusModal.Content>
                 <FocusModal.Header>Select An Image</FocusModal.Header>
                 <FocusModal.Body>
-                  <ImageList />
+                  <div />
                 </FocusModal.Body>
               </FocusModal.Content>
             </FocusModal>
