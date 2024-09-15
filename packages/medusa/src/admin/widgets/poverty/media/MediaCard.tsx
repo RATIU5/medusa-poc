@@ -1,6 +1,5 @@
 import { DropdownMenu, IconButton, usePrompt, toast } from "@medusajs/ui";
 import { EllipsisHorizontal, PencilSquare, Trash } from "@medusajs/icons";
-import type { UseMutationResult } from "@tanstack/react-query";
 
 const MediaCardDropdown = ({
   mediaId,
@@ -50,22 +49,13 @@ const MediaCardDropdown = ({
 
 const MediaCard = ({
   url,
-  skeleton,
   mediaId,
   removeItem,
 }: {
   url: string;
-  skeleton?: boolean;
   mediaId: string;
   removeItem: (id: string) => Promise<void>;
 }) => {
-  if (skeleton) {
-    return (
-      <div className="flex justify-center items-center aspect-square w-full h-auto max-w-md max-h-md overflow-hidden bg-ui-bg-subtle min-w-[2rem] rounded-md relative shadow-sm">
-        <div className="animate-pulse bg-ui-bg-subtle w-full h-auto" />
-      </div>
-    );
-  }
   return (
     <div className="flex justify-center items-center aspect-square w-full h-auto max-w-md max-h-md overflow-hidden bg-ui-bg-subtle min-w-[2rem] rounded-md relative shadow-sm">
       <MediaCardDropdown mediaId={mediaId} removeItem={removeItem} />

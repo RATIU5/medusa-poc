@@ -1,6 +1,5 @@
 import type { GetResponseMedia } from "../../../../utils/types";
 import MediaCard from "./MediaCard";
-import type { UseMutationResult } from "@tanstack/react-query";
 
 const MediaGrid = ({
   isLoading,
@@ -16,9 +15,15 @@ const MediaGrid = ({
   if (isLoading) {
     return (
       <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] auto-rows-[1fr] gap-4 px-6 pt-4">
-        <MediaCard url="" mediaId="" skeleton={true} />
-        <MediaCard url="" mediaId="" skeleton={true} />
-        <MediaCard url="" mediaId="" skeleton={true} />
+        <div className="flex justify-center items-center aspect-square w-full h-auto max-w-md max-h-md overflow-hidden bg-ui-bg-subtle min-w-[2rem] rounded-md relative shadow-sm">
+          <div className="animate-pulse bg-ui-bg-subtle w-full h-auto" />
+        </div>
+        <div className="flex justify-center items-center aspect-square w-full h-auto max-w-md max-h-md overflow-hidden bg-ui-bg-subtle min-w-[2rem] rounded-md relative shadow-sm">
+          <div className="animate-pulse bg-ui-bg-subtle w-full h-auto" />
+        </div>
+        <div className="flex justify-center items-center aspect-square w-full h-auto max-w-md max-h-md overflow-hidden bg-ui-bg-subtle min-w-[2rem] rounded-md relative shadow-sm">
+          <div className="animate-pulse bg-ui-bg-subtle w-full h-auto" />
+        </div>
       </div>
     );
   }
