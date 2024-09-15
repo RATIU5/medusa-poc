@@ -1,5 +1,5 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/medusa";
-import * as jwt from "jsonwebtoken";
+import { generateToken } from "../../../utils/token";
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const userId = req.requestId;
@@ -17,13 +17,3 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
   res.json(data);
 };
-
-function generateToken(userId: string) {
-  const payload = {
-    userId,
-  };
-  const options = {
-    expiresIn: "30d",
-  };
-  return jwt.sign(payload, process.env.JWT_SECRET, options);
-}

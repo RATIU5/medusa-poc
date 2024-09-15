@@ -11,8 +11,12 @@ const PovertyLayout = ({ children }) => {
         <Link to="/poverty/navigation">
           <Button variant="transparent">Navigation</Button>
         </Link>
-        <Button variant="transparent">Something</Button>
-        <Button variant="transparent">Else</Button>
+        <Link to="/poverty/hero">
+          <Button variant="transparent">Home Hero</Button>
+        </Link>
+        <Link to="/poverty/media">
+          <Button variant="transparent">Media</Button>
+        </Link>
       </Container>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </>
