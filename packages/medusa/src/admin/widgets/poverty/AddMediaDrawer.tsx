@@ -28,8 +28,10 @@ type MediaStruct = {
 const AddMediaDrawer = () => {
   const uploadRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [toUploadMedia, setToUploadMedia] = useState<MediaStruct[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleUploadClick = () => {
     uploadRef.current?.click();
@@ -97,19 +99,12 @@ const AddMediaDrawer = () => {
     );
   };
 
-  const handleFormSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
+  const handleFormSubmit: MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.preventDefault();
 
-    const validExtensions = [
-      "jpeg",
-      "jpg",
-      "png",
-      "gif",
-      "webp",
-      "heic",
-      "svg",
-    ];
+    const validExtensions = ["jpeg", "jpg", "png", "gif", "webp", "svg"];
     const formData = new FormData();
+
     for (const media of toUploadMedia) {
       if (!media.alt) {
         toast.error("Alt text is required for all media");
@@ -120,14 +115,33 @@ const AddMediaDrawer = () => {
         toast.error(`Invalid file type: ${ext}`);
         return;
       }
+
+      formData.append(`file_${media.file.name}`, media.file);
+      formData.append(`alt_${media.file.name}`, media.alt);
     }
-    for (const file of uploadRef.current.files) {
-      formData.append("file", file);
+
+    try {
+      setIsUploading(true);
+      const response = await fetch("/admin/poverty/media", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error(`${response.statusText}`);
+      }
+
+      if (response.status === 200) {
+        toast.success("Media uploaded successfully");
+        setToUploadMedia([]);
+        closeButtonRef.current?.click();
+        setIsUploading(false);
+      } else {
+        throw new Error("Error uploading media");
+      }
+    } catch (error) {
+      toast.error("Error uploading media");
+      setIsUploading(false);
     }
-    fetch("/admin/poverty/media", {
-      method: "POST",
-      body: formData,
-    });
   };
 
   return (
@@ -232,9 +246,13 @@ const AddMediaDrawer = () => {
         </Drawer.Body>
         <Drawer.Footer>
           <Drawer.Close asChild>
-            <Button variant="secondary">Cancel</Button>
+            <Button variant="secondary" ref={closeButtonRef}>
+              Cancel
+            </Button>
           </Drawer.Close>
-          <Button onClick={handleFormSubmit}>Upload</Button>
+          <Button onClick={handleFormSubmit} isLoading={isUploading}>
+            Upload
+          </Button>
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>

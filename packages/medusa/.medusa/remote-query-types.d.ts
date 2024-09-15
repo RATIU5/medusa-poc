@@ -267,71 +267,6 @@ export type ProductOptionValue = {
   deleted_at?: Maybe<Scalars['DateTime']['output']>;
 };
 
-export type PriceSet = {
-  __typename?: 'PriceSet';
-  id: Scalars['ID']['output'];
-  prices?: Maybe<Array<Maybe<MoneyAmount>>>;
-  calculated_price?: Maybe<CalculatedPriceSet>;
-  variant_link?: Maybe<LinkProductVariantPriceSet>;
-  variant?: Maybe<ProductVariant>;
-  shipping_option_link?: Maybe<LinkShippingOptionPriceSet>;
-  shipping_option?: Maybe<ShippingOption>;
-};
-
-export type MoneyAmount = {
-  __typename?: 'MoneyAmount';
-  id: Scalars['ID']['output'];
-  currency_code?: Maybe<Scalars['String']['output']>;
-  amount?: Maybe<Scalars['Float']['output']>;
-  min_quantity?: Maybe<Scalars['Float']['output']>;
-  max_quantity?: Maybe<Scalars['Float']['output']>;
-  rules_count?: Maybe<Scalars['Int']['output']>;
-  price_rules?: Maybe<Array<Maybe<PriceRule>>>;
-  created_at?: Maybe<Scalars['DateTime']['output']>;
-  updated_at?: Maybe<Scalars['DateTime']['output']>;
-  deleted_at?: Maybe<Scalars['DateTime']['output']>;
-};
-
-export type PriceRule = {
-  __typename?: 'PriceRule';
-  id: Scalars['ID']['output'];
-  price_set_id: Scalars['String']['output'];
-  price_set?: Maybe<PriceSet>;
-  attribute: Scalars['String']['output'];
-  value: Scalars['String']['output'];
-  priority: Scalars['Int']['output'];
-  price_id: Scalars['String']['output'];
-  price_list_id: Scalars['String']['output'];
-  created_at?: Maybe<Scalars['DateTime']['output']>;
-  updated_at?: Maybe<Scalars['DateTime']['output']>;
-  deleted_at?: Maybe<Scalars['DateTime']['output']>;
-};
-
-export type CalculatedPriceSet = {
-  __typename?: 'CalculatedPriceSet';
-  id: Scalars['ID']['output'];
-  is_calculated_price_price_list?: Maybe<Scalars['Boolean']['output']>;
-  is_calculated_price_tax_inclusive?: Maybe<Scalars['Boolean']['output']>;
-  calculated_amount?: Maybe<Scalars['Float']['output']>;
-  raw_calculated_amount?: Maybe<Scalars['JSON']['output']>;
-  is_original_price_price_list?: Maybe<Scalars['Boolean']['output']>;
-  is_original_price_tax_inclusive?: Maybe<Scalars['Boolean']['output']>;
-  original_amount?: Maybe<Scalars['Float']['output']>;
-  raw_original_amount?: Maybe<Scalars['JSON']['output']>;
-  currency_code?: Maybe<Scalars['String']['output']>;
-  calculated_price?: Maybe<PriceDetails>;
-  original_price?: Maybe<PriceDetails>;
-};
-
-export type PriceDetails = {
-  __typename?: 'PriceDetails';
-  id?: Maybe<Scalars['ID']['output']>;
-  price_list_id?: Maybe<Scalars['String']['output']>;
-  price_list_type?: Maybe<Scalars['String']['output']>;
-  min_quantity?: Maybe<Scalars['Float']['output']>;
-  max_quantity?: Maybe<Scalars['Float']['output']>;
-};
-
 export enum PromotionTypeValues {
   Standard = 'standard',
   Buyget = 'buyget'
@@ -447,6 +382,71 @@ export type SalesChannel = {
   api_keys_link?: Maybe<Array<Maybe<LinkPublishableApiKeySalesChannel>>>;
   locations_link?: Maybe<Array<Maybe<LinkSalesChannelStockLocation>>>;
   stock_locations?: Maybe<Array<Maybe<StockLocation>>>;
+};
+
+export type PriceSet = {
+  __typename?: 'PriceSet';
+  id: Scalars['ID']['output'];
+  prices?: Maybe<Array<Maybe<MoneyAmount>>>;
+  calculated_price?: Maybe<CalculatedPriceSet>;
+  variant_link?: Maybe<LinkProductVariantPriceSet>;
+  variant?: Maybe<ProductVariant>;
+  shipping_option_link?: Maybe<LinkShippingOptionPriceSet>;
+  shipping_option?: Maybe<ShippingOption>;
+};
+
+export type MoneyAmount = {
+  __typename?: 'MoneyAmount';
+  id: Scalars['ID']['output'];
+  currency_code?: Maybe<Scalars['String']['output']>;
+  amount?: Maybe<Scalars['Float']['output']>;
+  min_quantity?: Maybe<Scalars['Float']['output']>;
+  max_quantity?: Maybe<Scalars['Float']['output']>;
+  rules_count?: Maybe<Scalars['Int']['output']>;
+  price_rules?: Maybe<Array<Maybe<PriceRule>>>;
+  created_at?: Maybe<Scalars['DateTime']['output']>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+  deleted_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type PriceRule = {
+  __typename?: 'PriceRule';
+  id: Scalars['ID']['output'];
+  price_set_id: Scalars['String']['output'];
+  price_set?: Maybe<PriceSet>;
+  attribute: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+  priority: Scalars['Int']['output'];
+  price_id: Scalars['String']['output'];
+  price_list_id: Scalars['String']['output'];
+  created_at?: Maybe<Scalars['DateTime']['output']>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+  deleted_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type CalculatedPriceSet = {
+  __typename?: 'CalculatedPriceSet';
+  id: Scalars['ID']['output'];
+  is_calculated_price_price_list?: Maybe<Scalars['Boolean']['output']>;
+  is_calculated_price_tax_inclusive?: Maybe<Scalars['Boolean']['output']>;
+  calculated_amount?: Maybe<Scalars['Float']['output']>;
+  raw_calculated_amount?: Maybe<Scalars['JSON']['output']>;
+  is_original_price_price_list?: Maybe<Scalars['Boolean']['output']>;
+  is_original_price_tax_inclusive?: Maybe<Scalars['Boolean']['output']>;
+  original_amount?: Maybe<Scalars['Float']['output']>;
+  raw_original_amount?: Maybe<Scalars['JSON']['output']>;
+  currency_code?: Maybe<Scalars['String']['output']>;
+  calculated_price?: Maybe<PriceDetails>;
+  original_price?: Maybe<PriceDetails>;
+};
+
+export type PriceDetails = {
+  __typename?: 'PriceDetails';
+  id?: Maybe<Scalars['ID']['output']>;
+  price_list_id?: Maybe<Scalars['String']['output']>;
+  price_list_type?: Maybe<Scalars['String']['output']>;
+  min_quantity?: Maybe<Scalars['Float']['output']>;
+  max_quantity?: Maybe<Scalars['Float']['output']>;
 };
 
 export enum ChangeActionType {
@@ -1595,8 +1595,6 @@ declare module '@medusajs/types' {
     stock_location_addresses: StockLocationAddress
     stock_location: StockLocation
     stock_locations: StockLocation
-    workflow_execution: any
-    workflow_executions: any
     inventory_items: InventoryItem
     inventory_item: InventoryItem
     inventory: InventoryItem
@@ -1624,20 +1622,6 @@ declare module '@medusajs/types' {
     product_collections: ProductCollection
     product_category: ProductCategory
     product_categories: ProductCategory
-    price_set: PriceSet
-    price_sets: PriceSet
-    price_list: any
-    price_lists: any
-    price: any
-    prices: any
-    price_preference: any
-    price_preferences: any
-    promotion: Promotion
-    promotions: Promotion
-    campaign: Campaign
-    campaigns: Campaign
-    promotion_rule: PromotionRule
-    promotion_rules: PromotionRule
     customer_address: any
     customer_addresses: any
     customer_group_customer: any
@@ -1646,8 +1630,24 @@ declare module '@medusajs/types' {
     customer_groups: any
     customer: any
     customers: any
+    workflow_execution: any
+    workflow_executions: any
+    promotion: Promotion
+    promotions: Promotion
+    campaign: Campaign
+    campaigns: Campaign
+    promotion_rule: PromotionRule
+    promotion_rules: PromotionRule
     sales_channel: SalesChannel
     sales_channels: SalesChannel
+    price_set: PriceSet
+    price_sets: PriceSet
+    price_list: any
+    price_lists: any
+    price: any
+    prices: any
+    price_preference: any
+    price_preferences: any
     cart: any
     carts: any
     address: any
@@ -1664,20 +1664,12 @@ declare module '@medusajs/types' {
     shipping_method_adjustments: any
     shipping_method_tax_line: any
     shipping_method_tax_lines: any
+    api_key: any
+    api_keys: any
     store: any
     stores: any
     store_currency: any
     store_currencies: any
-    api_key: any
-    api_keys: any
-    user: any
-    users: any
-    invite: any
-    invites: any
-    auth_identity: any
-    auth_identities: any
-    provider_identity: any
-    provider_identities: any
     tax_rate: any
     tax_rates: any
     tax_region: any
@@ -1686,6 +1678,14 @@ declare module '@medusajs/types' {
     tax_rate_rules: any
     tax_provider: any
     tax_providers: any
+    auth_identity: any
+    auth_identities: any
+    provider_identity: any
+    provider_identities: any
+    user: any
+    users: any
+    invite: any
+    invites: any
     order: Order
     orders: Order
     order_address: OrderAddress

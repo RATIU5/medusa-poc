@@ -18,6 +18,24 @@ export type GetResponsePovertyNavigation = {
     | null;
 };
 
+export type GetResponseBunnyMediaAll = Array<{
+  Guid: string;
+  StorageZoneName: string;
+  Path: string;
+  ObjectName: string;
+  Length: number;
+  LastChanged: string;
+  ServerId: number;
+  ArrayNumber: number;
+  IsDirectory: boolean;
+  UserId: string;
+  ContentType: string;
+  DateCreated: string;
+  StorageZoneId: number;
+  Checksum: string;
+  ReplicatedZones: string;
+}>;
+
 export type PostResponsePovertyNavigation = {
   data: GetResponsePovertyNavigation["data"];
 };
@@ -32,3 +50,10 @@ export type FormattedPovertyNavigationItems = Array<
     position: number;
   }
 >;
+
+export type GetResponseMedia = {
+  data: Array<{
+    id: string;
+    path: string;
+  }>;
+};
