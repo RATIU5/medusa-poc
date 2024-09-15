@@ -76,7 +76,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     }
   }
 
-  let processedFiles = 0;
+  const processedFiles: {
+    id: string;
+    path: string;
+  }[] = [];
   for (const [fileName, fileData] of fileMap) {
     const file = files.get(`file_${fileName}`);
 
@@ -126,7 +129,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         },
       };
 
-      console.log(`Creating item for file: ${fileName}`);
       response = await fetch(`${process.env.VITE_POVERTY_URL}/api/v1/items`, {
         method: "POST",
         headers: {
@@ -156,19 +158,22 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         throw new Error(`Failed to create item: ${response.statusText}`);
       }
 
-      processedFiles++;
+      processedFiles.push({
+        id: uploadedItem.title,
+        path: `${process.env.BUNNY_PUBLIC_URL}/${uploadedItem.title}.${fileType}`,
+      });
     } catch (error) {
       console.error(`Error processing file ${fileName}:`, error);
     }
   }
 
-  if (fileMap.size !== processedFiles) {
+  if (fileMap.size !== processedFiles.length) {
     return res.status(500).json({
       error: "Failed to process all files",
     });
   }
 
-  res.status(200).json({ message: "Files processed" });
+  res.status(200).json({ data: processedFiles });
 };
 
 function getBoundary(contentType: string | undefined): string | null {

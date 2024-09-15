@@ -1,28 +1,15 @@
 import { DropdownMenu, IconButton, usePrompt, toast } from "@medusajs/ui";
 import { EllipsisHorizontal, PencilSquare, Trash } from "@medusajs/icons";
+import type { UseMutationResult } from "@tanstack/react-query";
 
-const MediaCardDropdown = ({ mediaId }: { mediaId: string }) => {
+const MediaCardDropdown = ({
+  mediaId,
+  removeItem,
+}: {
+  mediaId: string;
+  removeItem: (id: string) => Promise<void>;
+}) => {
   const dialog = usePrompt();
-
-  async function deleteMedia(mediaId: string) {
-    try {
-      const response = await fetch(`/admin/poverty/media/${mediaId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete image");
-      }
-
-      if (response.status === 200) {
-        toast.success("Image deleted successfully");
-      } else {
-        throw new Error("Failed to delete image");
-      }
-    } catch (error) {
-      toast.error("Failed to delete image");
-    }
-  }
 
   async function handleDeletePrompt() {
     const confirmed = await dialog({
@@ -31,7 +18,7 @@ const MediaCardDropdown = ({ mediaId }: { mediaId: string }) => {
     });
 
     if (confirmed) {
-      deleteMedia(mediaId);
+      await removeItem(mediaId);
     }
   }
 
@@ -65,10 +52,12 @@ const MediaCard = ({
   url,
   skeleton,
   mediaId,
+  removeItem,
 }: {
   url: string;
   skeleton?: boolean;
   mediaId: string;
+  removeItem: (id: string) => Promise<void>;
 }) => {
   if (skeleton) {
     return (
@@ -79,7 +68,7 @@ const MediaCard = ({
   }
   return (
     <div className="flex justify-center items-center aspect-square w-full h-auto max-w-md max-h-md overflow-hidden bg-ui-bg-subtle min-w-[2rem] rounded-md relative shadow-sm">
-      <MediaCardDropdown mediaId={mediaId} />
+      <MediaCardDropdown mediaId={mediaId} removeItem={removeItem} />
       <img src={url} alt="media" className="w-full h-auto object-cover" />
     </div>
   );

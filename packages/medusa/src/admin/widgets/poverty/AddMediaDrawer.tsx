@@ -4,20 +4,12 @@ import {
   type ChangeEvent,
   type DragEvent,
   useRef,
-  useEffect,
   useState,
 } from "react";
-import {
-  Input,
-  Text,
-  Button,
-  IconButton,
-  Drawer,
-  Label,
-  toast,
-} from "@medusajs/ui";
+import { Button, Drawer, toast } from "@medusajs/ui";
 import { ArrowUpTray } from "@medusajs/icons";
 import SelectMediaCard from "./media/SelectMediaCard";
+import type { GetResponseMedia } from "../../../utils/types";
 
 type MediaStruct = {
   file: File;
@@ -25,7 +17,11 @@ type MediaStruct = {
   alt: string;
 };
 
-const AddMediaDrawer = () => {
+const AddMediaDrawer = ({
+  addItem,
+}: {
+  addItem: (item: GetResponseMedia["data"][number]) => void;
+}) => {
   const uploadRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -130,9 +126,15 @@ const AddMediaDrawer = () => {
         throw new Error(`${response.statusText}`);
       }
 
+      const json = (await response.json()) as GetResponseMedia;
+      console.log(json);
+
       if (response.status === 200) {
         toast.success("Media uploaded successfully");
         setToUploadMedia([]);
+        for (const media of json.data) {
+          addItem(media);
+        }
         closeButtonRef.current?.click();
         setIsUploading(false);
       } else {
