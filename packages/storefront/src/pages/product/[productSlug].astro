@@ -1,6 +1,22 @@
 ---
 import {medusa} from "../../lib/medusa";
 
+interface ProductOption {
+  id: string;
+  title: string;
+  values: string[];
+}
+
+interface ProductVariant {
+  id: string;
+  title: string;
+  sku: string;
+  price: number; // Assuming price is a number, adjust if needed
+  purchasable: boolean;
+  inStock: boolean;
+  options: Record<string, string>;
+}
+
 export const prerender = false;
 
 const { productSlug } = Astro.params;
@@ -9,7 +25,56 @@ if (!productSlug) {
   return new Response("Not Found", { status: 404 });
 }
 
-const products = medusa.products.retrieve(productSlug);
+const productList = await medusa.products.list({handle: productSlug});
 
-console.log(products);
+if (productList.products.length === 0) {
+  return new Response("Not Found", { status: 404 });
+}
+
+if (productList.products.length > 1) {
+  return new Response("Multiple categories found", { status: 404 });
+}
+
+const product = productList.products[0];
+
+if (!product) {
+  return new Response("Not Found", { status: 404 });
+}
+
+const options: ProductOption[] = product.options?.map(option => ({
+    id: option.id,
+    title: option.title,
+    values: option.values.map(value => value.value)
+  })) ?? [];
+
+  const variants: ProductVariant[] = product.variants.map(variant => ({
+    id: variant.id,
+    title: variant.title,
+    sku: variant.sku,
+    price: 0, // You'll need to add price to your original data structure
+    purchasable: !variant.allow_backorder && variant.manage_inventory,
+    inStock: true, // Assuming all variants are in stock for this example
+    options: variant.options?.reduce((acc, opt) => {
+      acc[opt.option.title] = opt.value;
+      return acc;
+    }, {}) ?? []
+  }));
 ---
+
+<h1>{product.title}</h1>
+<p>{product.subtitle}</p>
+
+<p>{product.description}</p>
+
+<img src={product.thumbnail} alt={product.title} />
+
+{options.map(option => (
+  <div>
+    <label>{option.title}</label>
+    <select>
+      {option.values.map(value => (
+        <option value={value} disabled={!isOptionPurchaseable(option.id, value)}>{value}</option>
+      ))}
+    </select>
+  </div>
+))}

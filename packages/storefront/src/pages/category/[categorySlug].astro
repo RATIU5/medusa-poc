@@ -11,8 +11,6 @@ if (!categorySlug) {
 
 const categoryList = await medusa.productCategories.list({handle: categorySlug});
 
-console.log(categoryList);
-
 if (categoryList.product_categories.length === 0) {
   return new Response("Not Found", { status: 404 });
 }
@@ -23,18 +21,20 @@ if (categoryList.product_categories.length > 1) {
 
 const category = categoryList.product_categories[0];
 
-// const categories = await medusa.productCategories.retrieve(categorySlug);
+const prodRes = await medusa.products.list({
+  category_id: [category?.id ?? ""],
+  limit: 10,
+});
 
-// console.log(categories);
 ---
 
 <h1>{category?.name}</h1>
 <p>{category?.description}</p>
 
 <ul>
-{category?.category_children.map((product) => (
+{prodRes.products.map((product) => (
   <li>
-    <a href={`/product/${product.handle}`}>{product.name}</a>
+    <a href={`/product/${product.handle}`}>{product.title}</a>
   </li>
 ))}
 </ul>

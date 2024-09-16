@@ -1,7 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/medusa";
 import { randomUUID } from "node:crypto";
 import { generateToken } from "../../../../utils/token";
-import type { GetResponseBunnyMediaAll } from "src/utils/types";
+import type { GetResponsePovertyMediaItem } from "../../../../utils/types";
 
 type FileData = {
   alt: string;
@@ -27,14 +27,15 @@ type UploadedItem = {
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    const bunnyUrl = `${process.env.BUNNY_API_URL ?? ""}/${
-      process.env.BUNNY_API_USERNAME ?? ""
-    }/`; // Need the trailing slash to get all items
-    const response = await fetch(bunnyUrl, {
-      headers: {
-        AccessKey: process.env.BUNNY_ACCESS_KEY ?? "",
-      },
-    });
+    const response = await fetch(
+      `${process.env.VITE_POVERTY_URL}/api/v1/items?filter=metadata.type:eq:media`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${generateToken(req.requestId)}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       console.error("Failed to fetch media items:", response.statusText);
@@ -42,11 +43,15 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     }
 
     if (response.status === 200) {
-      const data = (await response.json()) as GetResponseBunnyMediaAll;
+      const data =
+        (await response.json()) as GetResponsePovertyMediaItem["data"];
+      console.log(data);
       return res.status(200).json({
-        data: data.map((m) => ({
-          id: m.ObjectName.split(".")[0], // Assumes there are no periods in the name
-          path: `${process.env.BUNNY_PUBLIC_URL}/${m.ObjectName}`,
+        data: data.map((item) => ({
+          id: item.id,
+          alt: item.content.alt,
+          src: item.content.src,
+          created_at: item.created_at,
         })),
       });
     }
