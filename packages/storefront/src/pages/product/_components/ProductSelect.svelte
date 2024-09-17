@@ -1,14 +1,13 @@
 <script lang="ts">
   import { writable, derived } from 'svelte/store';
-  import type { ProcessedProduct, ProductVariant } from '../_utils/types'; // Import the types we defined earlier
+  import type { ProductVariant, ProductOption } from '../_utils/types';
 
-  const {product} = $props() as {product: ProcessedProduct};
+  const {options, variants, title} = $props() as {options: ProductOption[], variants: ProductVariant[], title: string};
 
   const selectedOptions = writable<Record<string, string>>({});
 
-  // Initialize selectedOptions with the first available option for each
   $effect(() => {
-    const initialOptions = product.options.reduce((acc, option) => {
+    const initialOptions = options.reduce((acc, option) => {
       acc[option.title] = option.values[0];
       return acc;
     }, {});
@@ -18,7 +17,7 @@
   const selectedVariant = derived(
     [selectedOptions],
     ([$selectedOptions]) => 
-      product.variants.find(variant => 
+      variants.find(variant => 
         Object.entries($selectedOptions).every(
           ([key, value]) => variant.options[key] === value
         )
@@ -31,7 +30,7 @@
 
   function isOptionDisabled(optionTitle: string, optionValue: string): boolean {
     const testOptions = { ...$selectedOptions, [optionTitle]: optionValue };
-    return !product.variants.some(variant => 
+    return !variants.some(variant => 
       Object.entries(testOptions).every(([key, value]) => variant.options[key] === value) &&
       variant.purchasable &&
       variant.inStock
@@ -40,24 +39,24 @@
 </script>
 
 <div>
-  {#each product.options as option (option.id)}
-    <div>
-      <label for={option.id}>{option.title}</label>
-      <select
-        id={option.id}
-        value={$selectedOptions[option.title]}
-        on:change={(e) => handleOptionChange(option.title, e.target.value)}
-      >
-        {#each option.values as value}
-          <option 
+  {#each options as option (option.id)}
+    <fieldset>
+      <legend>{option.title}</legend>
+      {#each option.values as value}
+        <div>
+          <input 
+            type="checkbox" 
+            id={`${option.id}-${value}`}
+            name={option.title}
             value={value}
+            checked={$selectedOptions[option.title] === value}
             disabled={isOptionDisabled(option.title, value)}
-          >
-            {value}
-          </option>
-        {/each}
-      </select>
-    </div>
+            onchange={() => handleOptionChange(option.title, value)}
+          />
+          <label for={`${option.id}-${value}`}>{value}</label>
+        </div>
+      {/each}
+    </fieldset>
   {/each}
 </div>
 
@@ -71,13 +70,22 @@
     Add to Cart
   </button>
 {:else}
-  <p>No variant available for the selected options</p>
+  <p>Please select options to see available variants</p>
 {/if}
 
 <style>
-  /* Add your styles here */
-  select:disabled {
+  fieldset {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  legend {
+    font-weight: bold;
+  }
+  input[type="checkbox"]:disabled + label {
+    color: #999;
+  }
+  input[type="checkbox"]:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
   }
 </style>
