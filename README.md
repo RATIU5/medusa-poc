@@ -85,6 +85,25 @@ The project is structured as a monorepo with the following packages inside the `
 
 ## Common Problems and Solutions
 
+### Problem: relation "public.region_payment_provider" does not exist
+
+**Description:**
+When trying to run the migrations, you may come across an error similar to this:
+
+```
+message: `select "l0"."region_id", "l0"."payment_provider_id" from "public"."region_payment_provider" as "l0" where "l0"."deleted_at" is null and "l0"."region_id" in ('reg_01J812APGZB5QC215HSPRA0HE2') - relation "public.region_payment_provider" does not exist`,
+```
+
+**Solution:**
+
+1. Make sure you have run the migrations and synced the links: `npx medusa migrations run && npx medusa links sync` within the `backend` package
+
+**Additional Notes:**
+
+This error is caused by the database not being able to find the `region_payment_provider` (or related) table. This table is created by the migrations, so running the migrations should resolve this issue.
+
+---
+
 ### Problem: `medusa` Unable to acquire a connection
 
 **Description:**
