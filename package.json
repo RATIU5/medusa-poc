@@ -4,11 +4,8 @@
   "private": true,
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "db:start": "docker compose up -d",
-    "db:stop": "docker compose down",
-    "db:logs": "docker compose logs -f",
-    "db:migrate": "pnpm moon run medusa:migrate",
-    "medusa": "pnpm moon run medusa:medusa",
+    "medusa": "pnpm moon run backend:medusa",
+    "astro": "pnpm moon run frontend:astro",
     "format": "pnpm moon run :format",
     "check": "pnpm moon run :check",
     "lint": "pnpm moon run :lint",
@@ -18,12 +15,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
-    "@moonrepo/cli": "^1.27.6"
+    "@moonrepo/cli": "^1.28.2"
   },
   "packageManager": "pnpm@9.5.0",
   "engines": {
-    "node": "~20.16",
-    "docker": "~26.1"
+    "node": "~20.16"
   },
   "dependencies": {
     "dotenv": "^16.4.5"
