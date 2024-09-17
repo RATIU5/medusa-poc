@@ -51,22 +51,6 @@ export type StockLocation = {
   sales_channels?: Maybe<Array<Maybe<SalesChannel>>>;
 };
 
-export type SalesChannel = {
-  __typename?: 'SalesChannel';
-  id: Scalars['ID']['output'];
-  name: Scalars['String']['output'];
-  description?: Maybe<Scalars['String']['output']>;
-  is_disabled: Scalars['Boolean']['output'];
-  created_at: Scalars['DateTime']['output'];
-  metadata?: Maybe<Scalars['JSON']['output']>;
-  updated_at: Scalars['DateTime']['output'];
-  deleted_at?: Maybe<Scalars['DateTime']['output']>;
-  products_link?: Maybe<Array<Maybe<LinkProductSalesChannel>>>;
-  api_keys_link?: Maybe<Array<Maybe<LinkPublishableApiKeySalesChannel>>>;
-  locations_link?: Maybe<Array<Maybe<LinkSalesChannelStockLocation>>>;
-  stock_locations?: Maybe<Array<Maybe<StockLocation>>>;
-};
-
 export enum ProductStatus {
   Draft = 'draft',
   Proposed = 'proposed',
@@ -447,6 +431,22 @@ export type ApplicationMethod = {
   promotion?: Maybe<Promotion>;
   target_rules?: Maybe<Array<Maybe<PromotionRule>>>;
   buy_rules?: Maybe<Array<Maybe<PromotionRule>>>;
+};
+
+export type SalesChannel = {
+  __typename?: 'SalesChannel';
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  is_disabled: Scalars['Boolean']['output'];
+  created_at: Scalars['DateTime']['output'];
+  metadata?: Maybe<Scalars['JSON']['output']>;
+  updated_at: Scalars['DateTime']['output'];
+  deleted_at?: Maybe<Scalars['DateTime']['output']>;
+  products_link?: Maybe<Array<Maybe<LinkProductSalesChannel>>>;
+  api_keys_link?: Maybe<Array<Maybe<LinkPublishableApiKeySalesChannel>>>;
+  locations_link?: Maybe<Array<Maybe<LinkSalesChannelStockLocation>>>;
+  stock_locations?: Maybe<Array<Maybe<StockLocation>>>;
 };
 
 export enum ChangeActionType {
@@ -1595,8 +1595,6 @@ declare module '@medusajs/types' {
     stock_location_addresses: any
     stock_location: any
     stock_locations: any
-    sales_channel: any
-    sales_channels: any
     product_variant: any
     product_variants: any
     variant: any
@@ -1615,6 +1613,8 @@ declare module '@medusajs/types' {
     product_collections: any
     product_category: any
     product_categories: any
+    workflow_execution: any
+    workflow_executions: any
     inventory_items: any
     inventory_item: any
     inventory: any
@@ -1624,6 +1624,22 @@ declare module '@medusajs/types' {
     reservation_items: any
     inventory_level: any
     inventory_levels: any
+    price_set: any
+    price_sets: any
+    price_list: any
+    price_lists: any
+    price: any
+    prices: any
+    price_preference: any
+    price_preferences: any
+    promotion: any
+    promotions: any
+    campaign: any
+    campaigns: any
+    promotion_rule: any
+    promotion_rules: any
+    sales_channel: any
+    sales_channels: any
     customer_address: any
     customer_addresses: any
     customer_group_customer: any
@@ -1650,30 +1666,10 @@ declare module '@medusajs/types' {
     shipping_method_tax_lines: any
     api_key: any
     api_keys: any
-    workflow_execution: any
-    workflow_executions: any
-    price_set: any
-    price_sets: any
-    price_list: any
-    price_lists: any
-    price: any
-    prices: any
-    price_preference: any
-    price_preferences: any
-    promotion: any
-    promotions: any
-    campaign: any
-    campaigns: any
-    promotion_rule: any
-    promotion_rules: any
     store: any
     stores: any
     store_currency: any
     store_currencies: any
-    auth_identity: any
-    auth_identities: any
-    provider_identity: any
-    provider_identities: any
     tax_rate: any
     tax_rates: any
     tax_region: any
@@ -1682,10 +1678,10 @@ declare module '@medusajs/types' {
     tax_rate_rules: any
     tax_provider: any
     tax_providers: any
-    user: any
-    users: any
-    invite: any
-    invites: any
+    auth_identity: any
+    auth_identities: any
+    provider_identity: any
+    provider_identities: any
     order: any
     orders: any
     order_address: any
@@ -1706,6 +1702,10 @@ declare module '@medusajs/types' {
     returns: any
     return_reason: any
     return_reasons: any
+    user: any
+    users: any
+    invite: any
+    invites: any
     region: any
     regions: any
     country: any

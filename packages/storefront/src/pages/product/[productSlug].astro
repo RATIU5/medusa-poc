@@ -27,26 +27,30 @@ if (!product) {
   return new Response("Not Found", { status: 404 });
 }
 
-const options: ProductOption[] = product.options?.map(option => ({
-    id: option.id,
-    title: option.title,
-    values: option.values.map(value => value.value)
-  })) ?? [];
+const filteredProduct = {
+  title: product.title,
+  subtitle: product.subtitle,
+  description: product.description,
+  thumbnail: product.thumbnail,
+  options: product.options.map((option) => {
+    return {
+      id: option.id,
+      title: option.title,
+      values: option.values,
+    };
+  }),
+  variants: product.variants.map((variant) => {
+    return {
+      id: variant.id,
+      title: variant.title,
+      price: variant.price,
+      sku: variant.sku,
+      options: variant.options,
+    };
+  }),
+};
 
-  const variants: ProductVariant[] = product.variants.map(variant => ({
-    id: variant.id ?? "undefined",
-    title: variant.title ?? "undefined",
-    sku: variant.sku ?? "undefined",
-    price: variant.calculated_price ?? 0,
-    purchasable: !variant.allow_backorder && (variant.manage_inventory ?? false),
-    inStock: true, // Assuming all variants are in stock for this example
-    options: variant.options?.reduce((acc, opt) => {
-      acc[opt.option.title] = opt.value;
-      return acc;
-    }, {}) ?? []
-  }));
 ---
-
 <h1>{product.title}</h1>
 <p>{product.subtitle}</p>
 
@@ -54,4 +58,4 @@ const options: ProductOption[] = product.options?.map(option => ({
 
 <img src={product.thumbnail} alt={product.title} />
 
-<ProductSelect {options} {variants} title={product.title} />
+<ProductSelect {product} />
