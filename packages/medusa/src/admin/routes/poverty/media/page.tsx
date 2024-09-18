@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 const MediaPage = () => {
   const [media, setMedia] = useState<GetResponseMedia["data"]>([]);
   const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ["hNavData"],
+    queryKey: ["getAllMedia"],
     queryFn: async () => {
       const res = await fetch("/admin/poverty/media");
       const json = (await res.json()) as GetResponseMedia;

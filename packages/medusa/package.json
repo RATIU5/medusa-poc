@@ -16,15 +16,15 @@
     "build": "medusa build",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "start": "medusa start",
-    "dev": "medusa develop"
+    "dev": "medusa develop --verbose"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
     "@dnd-kit/modifiers": "^7.0.0",
     "@dnd-kit/sortable": "^8.0.0",
     "@hello-pangea/dnd": "^16.6.0",
-    "@medusajs/admin-sdk": "^0.0.2-preview-20240907120637",
-    "@medusajs/admin-shared": "^0.0.2-snapshot-20230525210913",
+    "@medusajs/admin-sdk": "preview",
+    "@medusajs/admin-shared": "preview",
     "@medusajs/api-key": "preview",
     "@medusajs/auth": "preview",
     "@medusajs/auth-emailpass": "preview",
@@ -56,8 +56,7 @@
     "@tanstack/react-table": "^8.20.5",
     "express": "^4.17.2",
     "jsonwebtoken": "^9.0.2",
-    "ky": "^1.7.2",
-    "medusa-react": "^9.0.18"
+    "ky": "^1.7.2"
   },
   "devDependencies": {
     "@medusajs/medusa-cli": "preview",

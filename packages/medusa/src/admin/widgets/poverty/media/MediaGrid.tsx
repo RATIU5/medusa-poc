@@ -34,14 +34,21 @@ const MediaGrid = ({
 
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] auto-rows-[1fr] gap-4 px-6 pt-4">
-      {data.map((item, i) => (
-        <MediaCard
-          removeItem={removeItem}
-          key={`${item.path} + ${i}`}
-          url={item.path}
-          mediaId={item.id}
-        />
-      ))}
+      {data
+        .sort((a, b) => {
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        })
+        .map((item, i) => (
+          <MediaCard
+            removeItem={removeItem}
+            key={`${item.src}${i}`}
+            url={item.src}
+            mediaId={item.id}
+            alt={item.alt}
+          />
+        ))}
     </div>
   );
 };
