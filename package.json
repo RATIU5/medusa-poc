@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "medusa": "pnpm moon run backend:medusa",
-    "astro": "pnpm moon run frontend:astro",
+    "medusa": "pnpm moon run backend:medusa -- ",
+    "astro": "pnpm moon run frontend:astro -- ",
     "format": "pnpm moon run :format",
     "check": "pnpm moon run :check",
     "lint": "pnpm moon run :lint",
