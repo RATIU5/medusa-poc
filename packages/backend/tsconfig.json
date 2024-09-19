@@ -14,6 +14,17 @@
     "outDir": "./dist",
     "rootDir": "./",
     "baseUrl": ".",
+    "paths": {
+      "@admin/*": ["src/admin/*"],
+      "@api/*": ["src/api/*"],
+      "@jobs/*": ["src/jobs/*"],
+      "@links/*": ["src/links/*"],
+      "@modules/*": ["src/modules/*"],
+      "@scripts/*": ["src/scripts/*"],
+      "@subscribers/*": ["src/subscribers/*"],
+      "@workflows/*": ["src/workflows/*"],
+      "@utils/*": ["src/utils/*"]
+    },
     "jsx": "react-jsx",
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,

@@ -1,0 +1,17 @@
+---
+import "@styles/app.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <slot name="head" />
+  </head>
+  <body>
+    <main class="relative">
+      <slot />
+    </main>
+  </body>
+</html>
