@@ -1,0 +1,10 @@
+---
+export type Props = {
+  class?: string
+}
+const {class: classes} = Astro.props;
+---
+
+<section class:list={["w-full flex flex-col", classes]}>
+  <slot />
+</section>
