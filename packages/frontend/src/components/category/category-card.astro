@@ -1,0 +1,12 @@
+---
+export type Props = {
+  name: string;
+  slug: string;
+};
+
+const { name, slug } = Astro.props;
+---
+
+<div>
+  <h3 class="text-yellow-50/90">{name}</h3>
+</div>

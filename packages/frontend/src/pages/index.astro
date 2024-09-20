@@ -1,29 +1,45 @@
 ---
 import Base from "@layouts/base.astro";
 import Section from "@components/layout/section.astro";
+import Content from "@components/layout/content.astro";
+import { getCategoriesList } from "@lib/data";
+import CategoryCard from "@components/category/category-card.astro";
+
+const categories = await getCategoriesList();
 ---
 
 <Base>
   <!-- Hero -->
-  <Section>
-    <div
-      class="bg-hero-y xl:bg-hero-x relative mx-auto flex h-screen min-h-[660px] w-full justify-center bg-cover bg-bottom xl:max-w-[2000px] xl:items-center xl:justify-end xl:bg-left"
-    >
+  <div class="flex w-full flex-col gap-40">
+    <Section>
       <div
-        class="bg-hero-gradient-y xl:bg-hero-gradient-x 2xl:bg-hero-gradient-x-lg 2xl:shadow-hero-insert-r absolute left-0 top-0 z-0 h-full w-full"
+        class="bg-hero-y xl:bg-hero-x relative mx-auto flex h-screen min-h-[660px] w-full justify-center bg-cover bg-bottom xl:max-w-[2000px] xl:items-center xl:justify-end xl:bg-left"
       >
-      </div>
-      <div class="4xl:max-w-3xl z-10 h-full w-full pt-32 xl:max-w-[45%]">
         <div
-          class="right-0 flex h-full w-full justify-center px-12 pt-10 text-center md:mx-auto md:pt-20 lg:px-0 xl:max-w-md xl:items-center xl:justify-end xl:pt-0 xl:text-left"
+          class="bg-hero-gradient-y xl:bg-hero-gradient-x 2xl:bg-hero-gradient-x-lg 2xl:shadow-hero-insert-r absolute left-0 top-0 z-0 h-full w-full"
         >
-          <h1
-            class="font-display xs:text-[6rem] xs:leading-[5rem] relative h-fit max-h-full max-w-2xl text-[5rem] leading-[4rem] tracking-wider text-yellow-50/90 sm:text-[8rem] sm:leading-[7rem] md:text-[10rem] md:leading-[8rem] xl:text-[10rem] xl:leading-[8rem]"
+        </div>
+        <div class="4xl:max-w-3xl z-10 h-full w-full pt-32 xl:max-w-[45%]">
+          <div
+            class="right-0 flex h-full w-full justify-center px-12 pt-10 text-center md:mx-auto md:pt-20 lg:px-0 xl:max-w-md xl:items-center xl:justify-end xl:pt-0 xl:text-left"
           >
-            For those who love their <span class="text-red-700/90">meat.</span>
-          </h1>
+            <h1
+              class="font-display xs:text-[6rem] xs:leading-[5rem] relative h-fit max-h-full max-w-2xl text-[5rem] leading-[4rem] tracking-wider text-yellow-50/90 sm:text-[8rem] sm:leading-[7rem] md:text-[10rem] md:leading-[8rem] xl:text-[10rem] xl:leading-[8rem]"
+            >
+              For those who love their <span class="text-red-700/90">meat.</span>
+            </h1>
+          </div>
         </div>
       </div>
-    </div>
-  </Section>
+    </Section>
+    <Section>
+      <Content>
+        <h2 class="font-display pb-2 text-6xl font-bold tracking-wider text-yellow-50/90">Browse Our Collection</h2>
+        <p class="text-yellow-50/50">We are a community of meat lovers who enjoy the finest cuts of meat.</p>
+        <div class="grid">
+          {categories.product_categories.map((c) => <CategoryCard name={c.name} slug={c.handle} />)}
+        </div>
+      </Content>
+    </Section>
+  </div>
 </Base>

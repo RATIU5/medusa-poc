@@ -13,6 +13,11 @@
     "@astrojs/check": "^0.9.3",
     "@astrojs/svelte": "^5.7.1",
     "@astrojs/tailwind": "^5.1.1",
+    "@medusajs/link-modules": "preview",
+    "@medusajs/medusa-js": "preview",
+    "@medusajs/modules-sdk": "preview",
+    "@medusajs/pricing": "preview",
+    "@medusajs/product": "preview",
     "astro": "^5.0.0-beta.1",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.5.2",
@@ -23,6 +28,7 @@
   "devDependencies": {
     "@medusajs/medusa": "preview",
     "@medusajs/types": "preview",
+    "@medusajs/client-types": "preview",
     "@melt-ui/svelte": "^0.83.0",
     "svelte": "5.0.0-next.252"
   }
