@@ -11,6 +11,21 @@ const config = {
       sans: ["Schibsted Grotesk Variable", ...fontFamily.sans],
     },
     extend: {
+      colors: {
+        "off-white": {
+          50: "#f3f2f2",
+          100: "#e6e5e1",
+          200: "#cfcdc7",
+          300: "#b1aea5",
+          400: "#959286",
+          500: "#838072",
+          600: "#5e5c52",
+          700: "#4a4941",
+          800: "#3d3d37",
+          900: "#363531",
+          950: "#1b1a18",
+        },
+      },
       screens: {
         "3xl": "1664px",
         "4xl": "1792px",

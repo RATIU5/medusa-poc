@@ -1,0 +1,23 @@
+# Dependencies
+node_modules
+
+# Build outputs
+build
+dist
+
+# Medusa-specific
+.medusa
+
+# Astro-specific
+.astro
+
+# Editor directories
+.vscode
+
+# Ignore any nested occurrences of these directories
+**/node_modules
+**/build
+**/dist
+**/.medusa
+**/.astro
+**/.vscode

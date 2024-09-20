@@ -14,32 +14,15 @@ import {
 } from "@medusajs/core-flows";
 import { Logger } from "@medusajs/medusa";
 import { RemoteLink } from "@medusajs/modules-sdk";
-import {
-  ExecArgs,
-  IFulfillmentModuleService,
-  ISalesChannelModuleService,
-  IStoreModuleService,
-} from "@medusajs/types";
-import {
-  ContainerRegistrationKeys,
-  Modules,
-  ProductStatus,
-  ModuleRegistrationName
-} from "@medusajs/utils";
+import { ExecArgs, IFulfillmentModuleService, ISalesChannelModuleService, IStoreModuleService } from "@medusajs/types";
+import { ContainerRegistrationKeys, Modules, ProductStatus, ModuleRegistrationName } from "@medusajs/utils";
 
 export default async function seedDemoData({ container }: ExecArgs) {
   const logger: Logger = container.resolve(ContainerRegistrationKeys.LOGGER);
-  const remoteLink: RemoteLink = container.resolve(
-    ContainerRegistrationKeys.REMOTE_LINK
-  );
-  const fulfillmentModuleService: IFulfillmentModuleService = container.resolve(
-    ModuleRegistrationName.FULFILLMENT
-  );
-  const salesChannelModuleService: ISalesChannelModuleService =
-    container.resolve(ModuleRegistrationName.SALES_CHANNEL);
-  const storeModuleService: IStoreModuleService = container.resolve(
-    ModuleRegistrationName.STORE
-  );
+  const remoteLink: RemoteLink = container.resolve(ContainerRegistrationKeys.REMOTE_LINK);
+  const fulfillmentModuleService: IFulfillmentModuleService = container.resolve(ModuleRegistrationName.FULFILLMENT);
+  const salesChannelModuleService: ISalesChannelModuleService = container.resolve(ModuleRegistrationName.SALES_CHANNEL);
+  const storeModuleService: IStoreModuleService = container.resolve(ModuleRegistrationName.STORE);
 
   const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
 
@@ -51,9 +34,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   if (!defaultSalesChannel.length) {
     // create the default sales channel
-    const { result: salesChannelResult } = await createSalesChannelsWorkflow(
-      container
-    ).run({
+    const { result: salesChannelResult } = await createSalesChannelsWorkflow(container).run({
       input: {
         salesChannelsData: [
           {
@@ -107,9 +88,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   logger.info("Finished seeding tax regions.");
 
   logger.info("Seeding stock location data...");
-  const { result: stockLocationResult } = await createStockLocationsWorkflow(
-    container
-  ).run({
+  const { result: stockLocationResult } = await createStockLocationsWorkflow(container).run({
     input: {
       locations: [
         {
@@ -135,17 +114,16 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
 
   logger.info("Seeding fulfillment data...");
-  const { result: shippingProfileResult } =
-    await createShippingProfilesWorkflow(container).run({
-      input: {
-        data: [
-          {
-            name: "Default",
-            type: "default",
-          },
-        ],
-      },
-    });
+  const { result: shippingProfileResult } = await createShippingProfilesWorkflow(container).run({
+    input: {
+      data: [
+        {
+          name: "Default",
+          type: "default",
+        },
+      ],
+    },
+  });
   const shippingProfile = shippingProfileResult[0];
 
   const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
@@ -288,9 +266,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   logger.info("Finished seeding stock location data.");
 
   logger.info("Seeding publishable API key data...");
-  const { result: publishableApiKeyResult } = await createApiKeysWorkflow(
-    container
-  ).run({
+  const { result: publishableApiKeyResult } = await createApiKeysWorkflow(container).run({
     input: {
       api_keys: [
         {
@@ -313,9 +289,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   logger.info("Seeding product data...");
 
-  const { result: categoryResult } = await createProductCategoriesWorkflow(
-    container
-  ).run({
+  const { result: categoryResult } = await createProductCategoriesWorkflow(container).run({
     input: {
       product_categories: [
         {
@@ -343,9 +317,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       products: [
         {
           title: "Medusa T-Shirt",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Shirts").id,
-          ],
+          category_ids: [categoryResult.find((cat) => cat.name === "Shirts").id],
           description:
             "Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.",
           handle: "t-shirt",
@@ -543,9 +515,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       products: [
         {
           title: "Medusa Sweatshirt",
-          category_ids: [
-            categoryResult.find((cat) => cat.name === "Sweatshirts").id,
-          ],
+          category_ids: [categoryResult.find((cat) => cat.name === "Sweatshirts").id],
           description:
             "Reimagine the feeling of a classic sweatshirt. With our cotton sweatshirt, everyday essentials no longer have to be ordinary.",
           handle: "sweatshirt",

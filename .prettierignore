@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+.astro/
+.medusa/
+cache/
+.moon/
+.vscode/
+
+pnpm-lock.yaml
