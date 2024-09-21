@@ -13,4 +13,9 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     },
   },
+  modules: {
+    categoryImageModuleService: {
+      resolve: "./modules/category-image",
+    },
+  },
 });
