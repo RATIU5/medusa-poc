@@ -1,10 +1,10 @@
-import { createProductCategoriesWorkflow } from "@medusajs/core-flows";
+import { createProductsWorkflow } from "@medusajs/core-flows";
 import { StepResponse } from "@medusajs/workflows-sdk";
 import { Modules, ContainerRegistrationKeys } from "@medusajs/utils";
 import { CATEGORY_IMAGE_MODULE } from "../../modules/category-image";
-import CategoryImageModuleService from "../../modules/category-image/service";
+import type CategoryImageModuleService from "../../modules/category-image/service";
 
-createProductCategoriesWorkflow.hooks.productCategoryCreated(
+createProductsWorkflow.hooks.productsCreated(
   async ({ products, additional_data }, { container }) => {
     if (!additional_data.brand_id) {
       return new StepResponse([], []);
