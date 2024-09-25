@@ -1,7 +1,7 @@
 import { createStep, StepResponse } from "@medusajs/workflows-sdk";
 import { CreateCategoryImageInput } from "..";
-import { CATEGORY_IMAGE_MODULE } from "../../../modules/category-image";
-import CategoryImageModuleService from "../../../modules/category-image/service";
+import { CATEGORY_IMAGE_MODULE } from "@modules/category-image";
+import CategoryImageModuleService from "@modules/category-image/service";
 
 export const createCategoryImageStep = createStep(
   "create-catgory-image-step",

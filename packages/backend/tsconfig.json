@@ -31,7 +31,8 @@
     "checkJs": false
   },
   "ts-node": {
-    "swc": true
+    "swc": true,
+    "require": ["tsconfig-paths/register"]
   },
   "exclude": ["**/__tests__", "**/__fixtures__", "node_modules", "build", ".cache"]
 }
